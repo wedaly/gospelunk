@@ -25,5 +25,7 @@ Milestone 3: Quality of life improvements
 
 [ ] display progress bar in tty
 [ ] optional template parameter for output format
+[ ] optionally output the type of the symbol (function, int, etc.)
+[ ] optionally filter by type of symbol
 [ ] command to index without searching
 [ ] command to clear the index

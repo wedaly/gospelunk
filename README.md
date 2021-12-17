@@ -26,8 +26,8 @@ Search for definitions:
 gss Foobar
 ```
 
-The first search might take longer because it needs to index the codebase; subsequent searches will be faster.
-If you want, you can create or update the index ahead-of-time like this:
+The first search might take longer because it needs to index the codebase; subsequent searches will be faster. If you want, you can create or update the index ahead-of-time like this:
+
 ```
 gss -index
 ```
@@ -54,13 +54,13 @@ gss Foo -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .SymbolKind }} {{ .SymbolNa
 
 These template variables are defined:
 
-| Variable | Meaning                                                                              |
-|----------|--------------------------------------------------------------------------------------|
-| Path     | Absolute path to the file containing the symbol.                                     |
-| Line     | Line number of the symbol (1-indexed).                                               |
-| Column   | Column of the first character of the symbol (1-indexed, counts the number of runes). |
-| Type     | The Go type of the symbol.                                                           |
-| Name     | The name of the symbol.                                                              |
+| Variable | Meaning                                                             |
+|----------|---------------------------------------------------------------------|
+| Path     | Absolute path to the file containing the symbol.                    |
+| Line     | Line number of the symbol (1-indexed).                              |
+| Column   | Column of the first character of the symbol (1-indexed, byte count) |
+| Type     | The Go type of the symbol.                                          |
+| Name     | The name of the symbol.                                             |
 
 In addition to Go's [predefined global template functions](https://pkg.go.dev/text/template#hdr-Functions), these functions are available:
 
