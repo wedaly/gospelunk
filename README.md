@@ -23,21 +23,22 @@ Usage
 Search for definitions:
 
 ```
-gss Foobar
+gss def Foobar
 ```
 
 The first search might take longer because it needs to index the codebase; subsequent searches will be faster. If you want, you can create or update the index ahead-of-time like this:
 
 ```
-gss -index
+gss index        # reindex anything that has changed
+gss index -clean # rebuild the index from scratch
 ```
 
 The search term is a glob pattern that matches the fully qualified symbol name, so you can also do this:
 
 ```
-gss Foo*
-gss foopkg.Foo*
-gss foopkg.Foo*Bar
+gss def Foo*
+gss def foopkg.Foo*
+gss def foopkg.Foo*Bar
 ```
 
 The default output format looks like this:
@@ -49,7 +50,7 @@ foo/bar.go:4:25 Foobar func() bool
 You can override the output format by specifying a Go template:
 
 ```
-gss Foo -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}'
+gss def Foo -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}'
 ```
 
 These template variables are defined:
