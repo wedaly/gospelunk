@@ -43,13 +43,13 @@ gss foopkg.Foo*Bar
 The default output format looks like this:
 
 ```
-foo/bar.go:4:25
+foo/bar.go:4:25 Foobar func() bool
 ```
 
 You can override the output format by specifying a Go template:
 
 ```
-gss Foo -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .SymbolKind }} {{ .SymbolName }}'
+gss Foo -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}'
 ```
 
 These template variables are defined:
