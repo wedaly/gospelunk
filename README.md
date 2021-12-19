@@ -33,6 +33,13 @@ gss index        # reindex anything that has changed
 gss index -clean # rebuild the index from scratch
 ```
 
+By default, the tool searches the package in the current working directory and its direct dependencies (imports). You can override this by passing a packages list:
+```
+gss def Foobar ./foopkg
+gss def Foobar ./...
+```
+For details about how to specify the packages list, see `go help packages`.
+
 The search term is a glob pattern that matches the fully qualified symbol name, so you can also do this:
 
 ```
