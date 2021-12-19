@@ -40,6 +40,8 @@ gss def Foobar ./...
 ```
 For details about how to specify the packages list, see `go help packages`.
 
+The tool searches both exported and unexported symbols for packages in the package list. For dependencies (imported packages), it searches only exported symbols.
+
 The search term is a glob pattern that matches the fully qualified symbol name, so you can also do this:
 
 ```
