@@ -23,20 +23,26 @@ Usage
 Create or update the index:
 
 ```
-gss index .     # package in current directory
-gss index ./... # packages in current directory and all subdirectories (recursive)
-gss index -I .  # include all packages imported by the package in the current directory
+gss index              # package in current directory
+gss index -pkgs=./...  # packages in current directory and all subdirectories (recursive)
+gss index -imports     # index packages imported by the package in the current directory
 ```
 
 Search for definitions:
 
 ```
-gss find Foobar .        # find "Foobar" in the current package
-gss find Foobar ./...    # include packages in subdirectories
-gss find -I Foobar ./... # include imports
+gss find Foobar             # find "Foobar" in the current package
+gss find -pkg=./... Foobar  # include packages in subdirectories
+gss find -imports Foobar    # search packages imported by the current package
 ```
 
 The results include all symbols that contain the search query.
+
+By default, the `gss find` commands will print a warning if the index is out-of-date.
+You can ask `gss find` to automatically reindex like this:
+```
+gss find -reindex Foobar
+```
 
 The default output format looks like this:
 
