@@ -14,52 +14,40 @@ Installation
 ------------
 
 ```
-go get github.com/wedaly/go-symbol-search@latest
+go install github.com/wedaly/go-symbol-search@latest
 ```
 
 Usage
 -----
 
+Create or update the index:
+
+```
+gss index .     # package in current directory
+gss index ./... # packages in current directory and all subdirectories (recursive)
+gss index -I .  # include all packages imported by the package in the current directory
+```
+
 Search for definitions:
 
 ```
-gss def Foobar
+gss find Foobar .        # find "Foobar" in the current package
+gss find Foobar ./...    # include packages in subdirectories
+gss find -I Foobar ./... # include imports
 ```
 
-The first search might take longer because it needs to index the codebase; subsequent searches will be faster. If you want, you can create or update the index ahead-of-time like this:
-
-```
-gss index        # reindex anything that has changed
-gss index -clean # rebuild the index from scratch
-```
-
-By default, the tool searches the package in the current working directory and its direct dependencies (imports). You can override this by passing a packages list:
-```
-gss def Foobar ./foopkg
-gss def Foobar ./...
-```
-For details about how to specify the packages list, see `go help packages`.
-
-The tool searches both exported and unexported symbols for packages in the package list. For dependencies (imported packages), it searches only exported symbols.
-
-The search term is a glob pattern that matches the fully qualified symbol name, so you can also do this:
-
-```
-gss def Foo*
-gss def foopkg.Foo*
-gss def foopkg.Foo*Bar
-```
+The results include all symbols that contain the search query.
 
 The default output format looks like this:
 
 ```
-foo/bar.go:4:25 Foobar func() bool
+foo/bar.go:4:25 github.com/example/foo.Foobar
 ```
 
 You can override the output format by specifying a Go template:
 
 ```
-gss def Foo -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}'
+gss find -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}' Foo
 ```
 
 These template variables are defined:
