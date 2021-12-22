@@ -1,7 +1,7 @@
-go-symbol-search
+gospelunk
 ================
 
-CLI tool to find symbols in Go projects quickly.
+CLI tool to quickly find definitions in Go projects and dependencies.
 
 Key Features
 ------------
@@ -14,7 +14,7 @@ Installation
 ------------
 
 ```
-go install github.com/wedaly/go-symbol-search@latest
+go install github.com/wedaly/gospelunk@latest
 ```
 
 Usage
@@ -23,17 +23,17 @@ Usage
 Create or update the index:
 
 ```
-gss index              # package in current directory
-gss index -pkgs=./...  # packages in current directory and all subdirectories (recursive)
-gss index -imports     # index packages imported by the package in the current directory
+gospelunk index              # package in current directory
+gospelunk index -pkgs=./...  # packages in current directory and all subdirectories (recursive)
+gospelunk index -imports     # index packages imported by the package in the current directory
 ```
 
 Search for definitions:
 
 ```
-gss find Foobar             # find "Foobar" in the current package
-gss find -pkg=./... Foobar  # include packages in subdirectories
-gss find -imports Foobar    # search packages imported by the current package
+gospelunk find Foobar             # find "Foobar" in the current package
+gospelunk find -pkg=./... Foobar  # include packages in subdirectories
+gospelunk find -imports Foobar    # search packages imported by the current package
 ```
 
 The results include all symbols that contain the search query.
@@ -41,7 +41,7 @@ The results include all symbols that contain the search query.
 By default, the `gss find` commands will print a warning if the index is out-of-date.
 You can ask `gss find` to automatically reindex like this:
 ```
-gss find -reindex Foobar
+gospelunk find -reindex Foobar
 ```
 
 The default output format looks like this:
@@ -53,7 +53,7 @@ foo/bar.go:4:25 github.com/example/foo.Foobar
 You can override the output format by specifying a Go template:
 
 ```
-gss find -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}' Foo
+gospelunk find -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}' Foo
 ```
 
 These template variables are defined:

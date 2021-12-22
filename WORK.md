@@ -1,8 +1,7 @@
 Work Breakdown
 ==============
 
--	[ ] full index a package
--	[ ] search for symbols in the index
+-	[ ] full index and search
 -	[ ] progress bar when indexing
 -	[ ] detect when index is out of date
 -	[ ] reindex packages that have changed since last index
