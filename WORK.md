@@ -1,7 +1,6 @@
 Work Breakdown
 ==============
 
-[ ] initialize a SQLite database in XDG_DATA
 [ ] full index a package
 [ ] search for symbols in the index
 [ ] progress bar when indexing
