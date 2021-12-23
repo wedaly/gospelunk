@@ -113,16 +113,17 @@ func walkDefs(dbPath string, pkgPatterns []string, includeImports bool, f func(*
 		}
 
 		// Optionally include directly imported packages.
-		if includeImports && !currentItem.isPkgImported {
+		if includeImports && !currentItem.isPkgImported && len(pkg.Imports) > 0 {
 			importedPkgDirs, err := pkgmeta.ListDirs(pkg.Imports)
 			if err != nil {
-				return errors.Wrapf(err, "pkgmeta.ListDirs")
-			}
-			for _, pkgDir := range importedPkgDirs {
-				stack = append(stack, stackItem{
-					pkgDir:        pkgDir,
-					isPkgImported: true,
-				})
+				fmt.Fprintf(os.Stderr, "WARN: could not find imported packages for %s\n", pkg.Name)
+			} else {
+				for _, pkgDir := range importedPkgDirs {
+					stack = append(stack, stackItem{
+						pkgDir:        pkgDir,
+						isPkgImported: true,
+					})
+				}
 			}
 		}
 	}
