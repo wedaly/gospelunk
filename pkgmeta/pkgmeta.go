@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -25,7 +26,7 @@ type Package struct {
 // Packages are resolved relative to the Go module from the current working directory;
 // this will fail if the current working directory is not part of a Go module.
 func Lookup(pkgPatterns []string) ([]Package, error) {
-	args := []string{"-e", "-json"}
+	args := []string{"-json"}
 	args = append(args, pkgPatterns...)
 	data, err := execGoListCmd(args...)
 	if err != nil {
@@ -37,7 +38,7 @@ func Lookup(pkgPatterns []string) ([]Package, error) {
 // ListDirs retrieves a list of package directories matching pkgPatterns.
 // See `go help packages` for details about the format of pkgPatterns.
 func ListDirs(pkgPatterns []string) ([]string, error) {
-	args := []string{"-e", "-find", "-f", "{{ .Dir }}"}
+	args := []string{"-find", "-f", "{{ .Dir }}"}
 	args = append(args, pkgPatterns...)
 	data, err := execGoListCmd(args...)
 	if err != nil {
@@ -52,6 +53,7 @@ func execGoListCmd(args ...string) ([]byte, error) {
 	args = append([]string{"list"}, args...)
 	cmd := exec.Command("go", args...)
 	cmd.Stdout = &out
+	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Command.Run")

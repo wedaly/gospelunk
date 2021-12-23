@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -14,12 +15,14 @@ import (
 
 // Index adds definitions from Go packages to the search index.
 func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
+	fmt.Printf("Searching for packages matching %v\n", pkgPatterns)
 	pkgMetas, err := pkgmeta.Lookup(pkgPatterns)
 	if err != nil {
 		return errors.Wrapf(err, "pkgmeta.Lookup")
 	}
 
 	if includeImports {
+		fmt.Printf("Searching for imported packages\n")
 		importedPkgMetas, err := pkgmeta.Lookup(uniqueSortedImportPkgNames(pkgMetas))
 		if err != nil {
 			return errors.Wrapf(err, "lookupImportedPackages")
@@ -34,12 +37,14 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
 	defer db.Close()
 
 	for _, pkg := range pkgMetas {
+		fmt.Printf("Indexing %s\n", pkg.ImportPath)
 		pbPkg := protobufPackage(pkg)
 		for _, filename := range pkg.GoFiles {
 			path := filepath.Join(pkg.Dir, filename)
 			defs, err := loadDefsFromGoFile(path)
 			if err != nil {
-				return err
+				fmt.Printf("WARN: could not index %s (%s)\n", path, err)
+				continue
 			}
 			pbPkg.GoFiles = append(pbPkg.GoFiles, protobufGoFile(filename, defs))
 		}
