@@ -53,10 +53,8 @@ These template variables are defined:
 | Variable | Meaning                                                             |
 |----------|---------------------------------------------------------------------|
 | Path     | Absolute path to the file containing the symbol.                    |
-| Line     | Line number of the symbol (1-indexed).                              |
-| Column   | Column of the first character of the symbol (1-indexed, byte count) |
-| Type     | The Go type of the symbol.                                          |
-| Name     | The name of the symbol.                                             |
+| LineNum  | Line number of the symbol (1-indexed).                              |
+| Name     | The name of the definition.                                         |
 
 In addition to Go's [predefined global template functions](https://pkg.go.dev/text/template#hdr-Functions), these functions are available:
 

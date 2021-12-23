@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -58,12 +59,32 @@ func handleIndexCmd(args []string) {
 }
 
 func handleFindCmd(args []string) {
-	if len(args) < 1 {
+	fs := flag.NewFlagSet("find", flag.ExitOnError)
+	fs.Usage = func() {
+		printUsage("Find definitions from the search index", FindUsageMsg)
+		fmt.Fprintf(os.Stderr, "Flags:\n\n")
+		fs.PrintDefaults()
+	}
+
+	formatTplArg := fs.String("f", "{{ .Path }}:{{ .LineNum }} {{ .Name }}", "format the output using Go template syntax")
+	if err := fs.Parse(args); err != nil {
+		panic(err)
+	}
+
+	posArgs := fs.Args()
+	if len(posArgs) < 1 {
 		printUsage("Please provide a search query", FindUsageMsg)
 		os.Exit(1)
-	} else if checkHelpFlag(args) {
-		printUsage("Find definitions from the search index", FindUsageMsg)
+	}
+
+	if checkHelpFlag(posArgs) {
+		fs.Usage()
 		return
+	}
+
+	query, packages := posArgs[0], posArgs[1:len(posArgs)]
+	if len(packages) == 0 {
+		packages = []string{"."}
 	}
 
 	dbPath, err := lookupDatabasePath()
@@ -71,12 +92,7 @@ func handleFindCmd(args []string) {
 		exitWithError(err)
 	}
 
-	query, packages := args[0], args[1:len(args)]
-	if len(packages) == 0 {
-		packages = []string{"."}
-	}
-
-	if err := cmd.Find(dbPath, query, packages); err != nil {
+	if err := cmd.Find(dbPath, query, packages, *formatTplArg); err != nil {
 		exitWithError(err)
 	}
 }

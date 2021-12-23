@@ -2,20 +2,34 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
+	"text/template"
 
 	"github.com/pkg/errors"
 
 	"github.com/wedaly/gospelunk/db"
-	pb "github.com/wedaly/gospelunk/db/protobuf"
 	"github.com/wedaly/gospelunk/pkgmeta"
 )
 
+// TemplateInput provides data to the format template.
+type TemplateInput struct {
+	Path    string
+	LineNum int64
+	Name    string
+}
+
 // Find searches Go definitions in the search index.
-func Find(dbPath string, query string, pkgPatterns []string) error {
+func Find(dbPath string, query string, pkgPatterns []string, formatTpl string) error {
 	queryRegexp, err := regexp.Compile(query)
 	if err != nil {
 		return errors.Wrapf(err, "regexp.Compile")
+	}
+
+	tpl, err := template.New("gospelunk").Parse(formatTpl)
+	if err != nil {
+		return errors.Wrapf(err, "template.Parse")
 	}
 
 	pkgDirs, err := pkgmeta.ListDirs(pkgPatterns)
@@ -43,16 +57,19 @@ func Find(dbPath string, query string, pkgPatterns []string) error {
 		for _, goFile := range pbPkg.GoFiles {
 			for _, def := range goFile.Defs {
 				if queryRegexp.MatchString(def.Name) {
-					outputGoDef(pbPkg, goFile, def)
+					err := tpl.Execute(os.Stdout, TemplateInput{
+						Path:    filepath.Join(pbPkg.Dir, goFile.Filename),
+						LineNum: def.LineNum,
+						Name:    def.Name,
+					})
+					if err != nil {
+						return errors.Wrapf(err, "template.Execute")
+					}
+					fmt.Printf("\n")
 				}
 			}
 		}
 	}
 
 	return nil
-}
-
-func outputGoDef(pkg *pb.Package, goFile *pb.GoFile, def *pb.GoDef) {
-	// TODO: make this configurable with a Go template argument.
-	fmt.Printf("+%d -N %s/%s %s\n", def.LineNum, pkg.Dir, goFile.Filename, def.Name)
 }
