@@ -61,7 +61,7 @@ In addition to Go's [predefined global template functions](https://pkg.go.dev/te
 | Function | Args          | Meaning                                                                           |
 |----------|---------------|-----------------------------------------------------------------------------------|
 | RelPath  | path (string) | Transform an absolute path to a relative path from the current working directory. |
-| Filename | path (string) | Returns the filename of the last component in the path.                           |
+| BasePath | path (string) | Returns the last component in the path.                                           |
 
 Building from Source
 --------------------

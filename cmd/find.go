@@ -27,7 +27,12 @@ func Find(dbPath string, query string, pkgPatterns []string, formatTpl string) e
 		return errors.Wrapf(err, "regexp.Compile")
 	}
 
-	tpl, err := template.New("gospelunk").Parse(formatTpl)
+	tpl, err := template.New("gospelunk").
+		Funcs(template.FuncMap{
+			"RelPath":  RelPathTplFunc(),
+			"BasePath": filepath.Base,
+		}).
+		Parse(formatTpl)
 	if err != nil {
 		return errors.Wrapf(err, "template.Parse")
 	}
@@ -72,4 +77,21 @@ func Find(dbPath string, query string, pkgPatterns []string, formatTpl string) e
 	}
 
 	return nil
+}
+
+func RelPathTplFunc() func(string) string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "WARN: could not find current working directory (%s)\n", err)
+		cwd = ""
+	}
+
+	return func(path string) string {
+		relpath, err := filepath.Rel(cwd, path)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "WARN: could not determine relative path (%s)\n", err)
+			relpath = path
+		}
+		return relpath
+	}
 }

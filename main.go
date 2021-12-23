@@ -66,7 +66,7 @@ func handleFindCmd(args []string) {
 		fs.PrintDefaults()
 	}
 
-	formatTplArg := fs.String("f", "{{ .Path }}:{{ .LineNum }} {{ .Name }}", "format the output using Go template syntax")
+	formatTplArg := fs.String("f", "{{ .Path | RelPath }}:{{ .LineNum }} {{ .Name }}", "format the output using Go template syntax")
 	if err := fs.Parse(args); err != nil {
 		panic(err)
 	}
