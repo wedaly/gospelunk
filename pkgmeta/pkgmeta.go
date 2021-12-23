@@ -16,6 +16,7 @@ type Package struct {
 	Dir        string   // directory containing package sources
 	ImportPath string   // import path of the package
 	GoFiles    []string // filenames of .go source files
+	Imports    []string // import paths used by this package
 }
 
 // Lookup retrieves package metadata from the `go list` command.

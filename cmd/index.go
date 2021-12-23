@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/pkg/errors"
 
@@ -12,10 +13,18 @@ import (
 )
 
 // Index adds definitions from Go packages to the search index.
-func Index(dbPath string, pkgPatterns []string) error {
+func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
 	pkgMetas, err := pkgmeta.Lookup(pkgPatterns)
 	if err != nil {
 		return errors.Wrapf(err, "pkgmeta.Lookup")
+	}
+
+	if includeImports {
+		importedPkgMetas, err := pkgmeta.Lookup(uniqueSortedImportPkgNames(pkgMetas))
+		if err != nil {
+			return errors.Wrapf(err, "lookupImportedPackages")
+		}
+		pkgMetas = append(pkgMetas, importedPkgMetas...)
 	}
 
 	db, err := db.OpenReadWrite(dbPath)
@@ -43,6 +52,23 @@ func Index(dbPath string, pkgPatterns []string) error {
 	return nil
 }
 
+func uniqueSortedImportPkgNames(pkgMetas []pkgmeta.Package) []string {
+	nameSet := make(map[string]struct{}, 0)
+	for _, pkg := range pkgMetas {
+		for _, importPkgName := range pkg.Imports {
+			nameSet[importPkgName] = struct{}{}
+		}
+	}
+
+	names := make([]string, 0, len(nameSet))
+	for name := range nameSet {
+		names = append(names, name)
+	}
+
+	sort.Strings(names)
+	return names
+}
+
 func loadDefsFromGoFile(path string) ([]pkgmeta.GoDef, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -59,11 +85,14 @@ func loadDefsFromGoFile(path string) ([]pkgmeta.GoDef, error) {
 }
 
 func protobufPackage(pkg pkgmeta.Package) *pb.Package {
+	imports := make([]string, len(pkg.Imports))
+	copy(imports, pkg.Imports)
 	return &pb.Package{
 		Name:       pkg.Name,
 		Dir:        pkg.Dir,
 		ImportPath: pkg.ImportPath,
 		GoFiles:    make([]*pb.GoFile, 0, len(pkg.GoFiles)),
+		Imports:    imports,
 	}
 }
 

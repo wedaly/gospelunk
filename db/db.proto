@@ -7,6 +7,7 @@ message Package {
 	string dir = 2;
 	string import_path = 3;
 	repeated GoFile go_files = 4;
+	repeated string imports = 5;
 }
 
 message GoFile {

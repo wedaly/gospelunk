@@ -39,11 +39,27 @@ func main() {
 }
 
 func handleIndexCmd(args []string) {
-	if len(args) < 1 {
+	fs := flag.NewFlagSet("index", flag.ExitOnError)
+	fs.Usage = func() {
+		printUsage("Update the search index", IndexUsageMsg)
+		fmt.Fprintf(os.Stderr, "Flags:\n\n")
+		fs.PrintDefaults()
+	}
+
+	includeImportsArg := fs.Bool("i", false, "include imported packages")
+
+	if err := fs.Parse(args); err != nil {
+		panic(err)
+	}
+
+	posArgs := fs.Args()
+	if len(posArgs) < 1 {
 		printUsage("Please specify the packages to index", IndexUsageMsg)
 		os.Exit(1)
-	} else if checkHelpFlag(args) {
-		printUsage("Update the search index", IndexUsageMsg)
+	}
+
+	if checkHelpFlag(posArgs) {
+		fs.Usage()
 		return
 	}
 
@@ -52,8 +68,8 @@ func handleIndexCmd(args []string) {
 		exitWithError(err)
 	}
 
-	packages := args
-	if err := cmd.Index(dbPath, packages); err != nil {
+	packages := posArgs
+	if err := cmd.Index(dbPath, packages, *includeImportsArg); err != nil {
 		exitWithError(err)
 	}
 }
@@ -66,7 +82,9 @@ func handleFindCmd(args []string) {
 		fs.PrintDefaults()
 	}
 
+	includeImportsArg := fs.Bool("i", false, "include imported packages")
 	formatTplArg := fs.String("f", "{{ .Path | RelPath }}:{{ .LineNum }} {{ .Name }}", "format the output using Go template syntax")
+
 	if err := fs.Parse(args); err != nil {
 		panic(err)
 	}
@@ -92,7 +110,7 @@ func handleFindCmd(args []string) {
 		exitWithError(err)
 	}
 
-	if err := cmd.Find(dbPath, query, packages, *formatTplArg); err != nil {
+	if err := cmd.Find(dbPath, query, packages, *includeImportsArg, *formatTplArg); err != nil {
 		exitWithError(err)
 	}
 }
