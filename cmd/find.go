@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"text/template"
 
 	"github.com/pkg/errors"
@@ -38,96 +39,113 @@ func Find(dbPath string, query string, pkgPatterns []string, includeImports bool
 		return errors.Wrapf(err, "template.Parse")
 	}
 
-	return walkDefs(dbPath, pkgPatterns, includeImports, func(pkg *pb.Package, goFile *pb.GoFile, goDef *pb.GoDef) error {
-		if !queryRegexp.MatchString(goDef.Name) {
-			return nil
-		}
+	matchedPkgs, err := getMatchingPackagesFromDb(dbPath, pkgPatterns, includeImports)
+	if err != nil {
+		return err
+	}
 
-		err := tpl.Execute(os.Stdout, TemplateInput{
-			Path:    filepath.Join(pkg.Dir, goFile.Filename),
-			LineNum: goDef.LineNum,
-			Name:    goDef.Name,
-		})
-		if err != nil {
-			return errors.Wrapf(err, "template.Execute")
-		}
+	for _, mp := range matchedPkgs {
+		for _, goFile := range mp.pkg.GoFiles {
+			for _, goDef := range goFile.Defs {
+				if mp.fromImport && !goDef.Exported {
+					// Skip private definitions from imported packages.
+					continue
+				}
 
-		fmt.Printf("\n")
-		return nil
-	})
+				if !queryRegexp.MatchString(goDef.Name) {
+					continue
+				}
+
+				err := tpl.Execute(os.Stdout, TemplateInput{
+					Path:    filepath.Join(mp.pkg.Dir, goFile.Filename),
+					LineNum: goDef.LineNum,
+					Name:    goDef.Name,
+				})
+				if err != nil {
+					return errors.Wrapf(err, "template.Execute")
+				}
+
+				fmt.Printf("\n")
+			}
+		}
+	}
+
+	return nil
 }
 
-func walkDefs(dbPath string, pkgPatterns []string, includeImports bool, f func(*pb.Package, *pb.GoFile, *pb.GoDef) error) error {
+// matchedPackage represents a package from the database.
+type matchedPackage struct {
+	pkg        *pb.Package
+	fromImport bool
+}
+
+func getMatchingPackagesFromDb(dbPath string, pkgPatterns []string, includeImports bool) ([]matchedPackage, error) {
 	db, err := db.OpenReadOnly(dbPath)
 	if err != nil {
-		return errors.Wrapf(err, "db.OpenReadOnly")
+		return nil, errors.Wrapf(err, "db.OpenReadOnly")
 	}
 	defer db.Close()
 
 	pkgDirs, err := pkgmeta.ListDirs(pkgPatterns)
 	if err != nil {
-		return errors.Wrapf(err, "pkgmeta.ListDirs")
+		return nil, errors.Wrapf(err, "pkgmeta.ListDirs")
 	}
 
-	type stackItem struct {
-		pkgDir        string
-		isPkgImported bool
-	}
-	stack := make([]stackItem, 0, len(pkgDirs))
-	for _, pkgDir := range pkgDirs {
-		stack = append(stack, stackItem{pkgDir: pkgDir, isPkgImported: false})
-	}
-
-	visitedPkgDirs := make(map[string]struct{}, 0)
-	var currentItem stackItem
-	for len(stack) > 0 {
-		currentItem, stack = stack[len(stack)-1], stack[0:len(stack)-1]
-		if _, ok := visitedPkgDirs[currentItem.pkgDir]; ok {
-			// Already visited this package.
-			continue
-		} else {
-			// Mark this package as visited.
-			visitedPkgDirs[currentItem.pkgDir] = struct{}{}
+	packages := make([]matchedPackage, 0, len(pkgDirs))
+	importSet := make(map[string]struct{}, 0)
+	err = iterPackages(db, pkgDirs, func(pkg *pb.Package) {
+		packages = append(packages, matchedPackage{
+			pkg:        pkg,
+			fromImport: false,
+		})
+		if includeImports {
+			for _, importPkgName := range pkg.Imports {
+				importSet[importPkgName] = struct{}{}
+			}
 		}
+	})
+	if err != nil {
+		return nil, err
+	}
 
-		pkg, err := db.ReadPackage(currentItem.pkgDir)
+	if includeImports {
+		importPkgNames := make([]string, 0, len(importSet))
+		for pkgName := range importSet {
+			importPkgNames = append(importPkgNames, pkgName)
+		}
+		sort.Strings(importPkgNames)
+
+		if len(importPkgNames) > 0 {
+			pkgDirs, err := pkgmeta.ListDirs(importPkgNames)
+			if err != nil {
+				return nil, errors.Wrapf(err, "pkgmeta.ListDirs")
+			}
+
+			err = iterPackages(db, pkgDirs, func(pkg *pb.Package) {
+				packages = append(packages, matchedPackage{
+					pkg:        pkg,
+					fromImport: true,
+				})
+			})
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return packages, nil
+}
+
+func iterPackages(db *db.DB, pkgDirs []string, f func(*pb.Package)) error {
+	for _, pkgDir := range pkgDirs {
+		pkg, err := db.ReadPackage(pkgDir)
 		if err != nil {
 			return errors.Wrapf(err, "db.ReadPackage")
 		}
-
-		if pkg == nil {
-			// The package is not available in the search index, so skip it.
-			continue
-		}
-
-		for _, goFile := range pkg.GoFiles {
-			for _, def := range goFile.Defs {
-				if currentItem.isPkgImported && !def.Exported {
-					// Skip private definitions from imported packages.
-					continue
-				}
-				if err := f(pkg, goFile, def); err != nil {
-					return err
-				}
-			}
-		}
-
-		// Optionally include directly imported packages.
-		if includeImports && !currentItem.isPkgImported && len(pkg.Imports) > 0 {
-			importedPkgDirs, err := pkgmeta.ListDirs(pkg.Imports)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "WARN: could not find imported packages for %s\n", pkg.Name)
-			} else {
-				for _, pkgDir := range importedPkgDirs {
-					stack = append(stack, stackItem{
-						pkgDir:        pkgDir,
-						isPkgImported: true,
-					})
-				}
-			}
+		if pkg != nil {
+			f(pkg)
 		}
 	}
-
 	return nil
 }
 
