@@ -83,7 +83,7 @@ func handleFindCmd(args []string) {
 	}
 
 	includeImportsArg := fs.Bool("i", false, "include imported packages")
-	formatTplArg := fs.String("f", "{{ .Path | RelPath }}:{{ .LineNum }} {{ .Name }}", "format the output using Go template syntax")
+	formatTplArg := fs.String("f", "{{ .Path | RelPath }}:{{ .LineNum }} {{ .Kind }} {{ .Name }}", "format the output using Go template syntax")
 
 	if err := fs.Parse(args); err != nil {
 		panic(err)

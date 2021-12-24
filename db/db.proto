@@ -17,6 +17,7 @@ message GoFile {
 
 message GoDef {
 	string name = 1;
-	int64 line_num = 2;
-	bool exported = 3;
+	int32 kind = 2;
+	int64 line_num = 3;
+	bool exported = 4;
 }

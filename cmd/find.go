@@ -18,6 +18,7 @@ import (
 // TemplateInput provides data to the format template.
 type TemplateInput struct {
 	Path    string
+	Kind    string
 	LineNum int64
 	Name    string
 }
@@ -58,6 +59,7 @@ func Find(dbPath string, query string, pkgPatterns []string, includeImports bool
 
 				err := tpl.Execute(os.Stdout, TemplateInput{
 					Path:    filepath.Join(mp.pkg.Dir, goFile.Filename),
+					Kind:    pkgmeta.GoDefKind(goDef.Kind).String(),
 					LineNum: goDef.LineNum,
 					Name:    goDef.Name,
 				})

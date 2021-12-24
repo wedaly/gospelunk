@@ -106,6 +106,7 @@ func protobufGoFile(filename string, defs []pkgmeta.GoDef) *pb.GoFile {
 	for i, def := range defs {
 		pbDefs[i] = &pb.GoDef{
 			Name:     def.Name,
+			Kind:     int32(def.Kind),
 			LineNum:  int64(def.LineNum),
 			Exported: def.Exported,
 		}

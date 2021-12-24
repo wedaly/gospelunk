@@ -55,6 +55,7 @@ These template variables are defined:
 | Path     | Absolute path to the file containing the symbol.                    |
 | LineNum  | Line number of the symbol (1-indexed).                              |
 | Name     | The name of the definition.                                         |
+| Kind     | The kind of the definition ("value", "func", "struct", etc.)        |
 
 In addition to Go's [predefined global template functions](https://pkg.go.dev/text/template#hdr-Functions), these functions are available:
 

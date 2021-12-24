@@ -11,9 +11,45 @@ import (
 	"github.com/pkg/errors"
 )
 
+// GoDefKind represents the kind of a Go definition (function, value, interface, etc.)
+// This is less specific than the full Go type.
+type GoDefKind int
+
+const (
+	GoDefKindValue = GoDefKind(iota)
+	GoDefKindFunc
+	GoDefKindTypeStruct
+	GoDefKindStructField
+	GoDefKindTypeInterface
+	GoDefKindInterfaceMethod
+	GoDefKindTypeOther
+)
+
+func (k GoDefKind) String() string {
+	switch k {
+	case GoDefKindValue:
+		return "value"
+	case GoDefKindFunc:
+		return "func"
+	case GoDefKindTypeStruct:
+		return "struct"
+	case GoDefKindStructField:
+		return "field"
+	case GoDefKindTypeInterface:
+		return "interface"
+	case GoDefKindInterfaceMethod:
+		return "method"
+	case GoDefKindTypeOther:
+		return "type"
+	default:
+		return "unknown"
+	}
+}
+
 // GoDef represents a top-level definition in a Go package.
 type GoDef struct {
 	Name     string
+	Kind     GoDefKind
 	LineNum  int
 	Exported bool
 }
@@ -56,6 +92,7 @@ func loadDefsFromValueSpec(valueSpec *ast.ValueSpec, fset *token.FileSet, defs *
 			valueName := nameIdent.Name
 			*defs = append(*defs, GoDef{
 				Name:     valueName,
+				Kind:     GoDefKindValue,
 				LineNum:  lineNum,
 				Exported: isExported(valueName),
 			})
@@ -70,18 +107,23 @@ func loadDefsFromTypeSpec(typeSpec *ast.TypeSpec, fset *token.FileSet, defs *[]G
 
 	lineNum := fset.Position(typeSpec.Pos()).Line
 	typeName := typeSpec.Name.Name
-	*defs = append(*defs, GoDef{
-		Name:     typeName,
-		LineNum:  lineNum,
-		Exported: isExported(typeName),
-	})
+	kind := GoDefKindTypeOther
 
 	switch x := typeSpec.Type.(type) {
 	case *ast.StructType:
+		kind = GoDefKindTypeStruct
 		loadDefsFromStructType(x, fset, typeName, defs)
 	case *ast.InterfaceType:
+		kind = GoDefKindTypeInterface
 		loadDefsFromInterfaceType(x, fset, typeName, defs)
 	}
+
+	*defs = append(*defs, GoDef{
+		Name:     typeName,
+		Kind:     kind,
+		LineNum:  lineNum,
+		Exported: isExported(typeName),
+	})
 }
 
 func loadDefsFromStructType(structType *ast.StructType, fset *token.FileSet, typeName string, defs *[]GoDef) {
@@ -92,6 +134,7 @@ func loadDefsFromStructType(structType *ast.StructType, fset *token.FileSet, typ
 				fieldName := nameIdent.Name
 				*defs = append(*defs, GoDef{
 					Name:     fmt.Sprintf("%s.%s", typeName, fieldName),
+					Kind:     GoDefKindStructField,
 					LineNum:  lineNum,
 					Exported: isExported(fieldName),
 				})
@@ -108,6 +151,7 @@ func loadDefsFromInterfaceType(interfaceType *ast.InterfaceType, fset *token.Fil
 				methodName := nameIdent.Name
 				*defs = append(*defs, GoDef{
 					Name:     fmt.Sprintf("%s.%s", typeName, methodName),
+					Kind:     GoDefKindInterfaceMethod,
 					LineNum:  lineNum,
 					Exported: isExported(methodName),
 				})
@@ -124,6 +168,7 @@ func loadDefsFromFuncDecl(funcDecl *ast.FuncDecl, fset *token.FileSet, defs *[]G
 	funcName := funcDecl.Name.Name
 	*defs = append(*defs, GoDef{
 		Name:     funcName,
+		Kind:     GoDefKindFunc,
 		LineNum:  lineNum,
 		Exported: isExported(funcName),
 	})
