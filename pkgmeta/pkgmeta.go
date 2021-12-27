@@ -18,6 +18,14 @@ type Package struct {
 	ImportPath string   // import path of the package
 	GoFiles    []string // filenames of .go source files
 	Imports    []string // import paths used by this package
+	Module     *Module  // info about package's containing module, if any (can be nil)
+}
+
+// Module represents metadata about a Go module.
+type Module struct {
+	Path  string // module path
+	Dir   string // directory holding files for this module, if any
+	GoMod string // path to the go.mod file used when loading this module, if any
 }
 
 // Lookup retrieves package metadata from the `go list` command.

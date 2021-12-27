@@ -8,6 +8,7 @@ message Package {
 	string import_path = 3;
 	repeated GoFile go_files = 4;
 	repeated string imports = 5;
+	string hash = 6;
 }
 
 message GoFile {

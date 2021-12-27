@@ -37,8 +37,25 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
 	defer db.Close()
 
 	for _, pkg := range pkgMetas {
+		hash, err := pkgmeta.HashFileInfo(pkg)
+		if err != nil {
+			fmt.Printf("WARN: could not hash file info for pkg %s (%s)\n", pkg.Name, err)
+		}
+
+		cachedPkg, err := db.ReadPackage(pkg.Dir)
+		if err != nil {
+			return errors.Wrapf(err, "db.ReadPackage")
+		}
+
+		hashString := hash.String()
+		if cachedPkg != nil && !hash.Empty() && cachedPkg.Hash == hashString {
+			fmt.Printf("Skipping pkg %s because it hasn't changed\n", cachedPkg.Name)
+			continue
+		}
+
 		fmt.Printf("Indexing %s\n", pkg.ImportPath)
 		pbPkg := protobufPackage(pkg)
+		pbPkg.Hash = hashString
 		for _, filename := range pkg.GoFiles {
 			path := filepath.Join(pkg.Dir, filename)
 			defs, err := loadDefsFromGoFile(path)
