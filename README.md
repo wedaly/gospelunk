@@ -72,6 +72,12 @@ In addition to Go's [predefined global template functions](https://pkg.go.dev/te
 | RelPath  | path (string) | Transform an absolute path to a relative path from the current working directory. |
 | BasePath | path (string) | Returns the last component in the path.                                           |
 
+For example:
+
+```
+gospelunk find -f '{{ .Path | BasePath }} {{ .Name }}' .
+```
+
 Integrations
 ------------
 
