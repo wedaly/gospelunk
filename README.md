@@ -91,6 +91,22 @@ gospelunk stores the search index in a [BoltDB database](https://github.com/etcd
 Integrations
 ------------
 
+### Bash function, fzf, less
+
+If you have [fzf](https://github.com/junegunn/fzf) installed, you can add this to your .bashrc:
+
+```
+gofind () {
+	gospelunk find -i -f "+{{.LineNum}} {{.Path|RelPath}} {{.Kind}} {{.Name}}" $1 | fzf | cut -d " " -f 1-2 | xargs less
+}
+```
+
+After `source .bashrc` you can search packages and imports in the current working directory like this:
+
+```
+gofind Foobar
+```
+
 ### Aretext menu commands
 
 Run `aretext -editconfig`, then add this rule:
