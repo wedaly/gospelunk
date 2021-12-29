@@ -29,29 +29,31 @@ Usage
 Create or update the index:
 
 ```
-gospelunk index .          # index the package in current directory
-gospelunk index ./...      # index packages in current directory and all subdirectories (recursive)
-gospelunk index -imports . # index packages imported by the package in the current directory
+gospelunk index .      # index the package in current directory
+gospelunk index ./...  # index packages in current directory and all subdirectories (recursive)
+gospelunk index -i .   # index packages imported by the package in the current directory
 ```
 
 Search for definitions:
 
 ```
-gospelunk find Foobar           # find "Foobar" in the current package
-gospelunk find Foobar ./...     # include packages in subdirectories
-gospelunk find -imports Foobar  # include definitions from imports
+gospelunk find Foobar       # find "Foobar" in the current package
+gospelunk find Foobar ./... # include packages in subdirectories
+gospelunk find -i Foobar    # include definitions from imports
 ```
+
+The query is a [regex](https://github.com/google/re2/wiki/Syntax) that matches the definition name.
 
 The results include all symbols that contain the search query. The default output format looks like this:
 
 ```
-foo/bar.go:4:25 github.com/example/foo.Foobar
+foo/bar.go:123 func Foobar
 ```
 
 You can override the output format by specifying a Go template:
 
 ```
-gospelunk find -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}' Foo
+gospelunk find -f '{{ .Path }}:{{ .LineNum }} {{ .Kind }} {{ .Name }}' Foo
 ```
 
 These template variables are defined:
