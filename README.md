@@ -79,7 +79,7 @@ Follow instructions in [custom menu commands](https://aretext.org/docs/custom-me
     - name: gospelunk index
       shellCmd: gospelunk index -i ./... | less
     - name: gospelunk find
-      shellCmd: gospelunk find -i -f "{{.Path|RelPath}}:{{.LineNum}}:{{.Kind}} {{.Name}}" $WORD $FILEPATH
+      shellCmd: gospelunk find -i -f "{{.Path|RelPath}}:{{.LineNum}}:{{.Kind}} {{.Name}}" "^${WORD}$" $FILEPATH
       mode: fileLocations
 ```
 
