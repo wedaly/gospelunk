@@ -47,14 +47,14 @@ func handleIndexCmd(args []string) {
 		fs.PrintDefaults()
 	}
 
-	verboseFlagArg := fs.Bool("v", false, "verbose")
+	quietFlagArg := fs.Bool("q", false, "quiet")
 	includeImportsArg := fs.Bool("i", false, "include imported packages")
 
 	if err := fs.Parse(args); err != nil {
 		panic(err)
 	}
 
-	log.Init(*verboseFlagArg)
+	log.Init(*quietFlagArg)
 
 	posArgs := fs.Args()
 	if len(posArgs) < 1 {
@@ -86,7 +86,7 @@ func handleFindCmd(args []string) {
 		fs.PrintDefaults()
 	}
 
-	verboseFlagArg := fs.Bool("v", false, "verbose")
+	quietFlagArg := fs.Bool("q", false, "quiet")
 	includeImportsArg := fs.Bool("i", false, "include imported packages")
 	formatTplArg := fs.String("f", "{{ .Path | RelPath }}:{{ .LineNum }} {{ .Kind }} {{ .Name }}", "format the output using Go template syntax")
 
@@ -94,7 +94,7 @@ func handleFindCmd(args []string) {
 		panic(err)
 	}
 
-	log.Init(*verboseFlagArg)
+	log.Init(*quietFlagArg)
 
 	posArgs := fs.Args()
 	if len(posArgs) < 1 {

@@ -29,9 +29,9 @@ Usage
 Create or update the index:
 
 ```
-gospelunk index -v .      # index the package in current directory
-gospelunk index -v ./...  # index packages in current directory and all subdirectories (recursive)
-gospelunk index -v -i .   # index packages imported by the package in the current directory
+gospelunk index .      # index the package in current directory
+gospelunk index ./...  # index packages in current directory and all subdirectories (recursive)
+gospelunk index -i .   # index packages imported by the package in the current directory
 ```
 
 The index command will skip packages if they haven't changed since they were last indexed.
@@ -109,7 +109,7 @@ Add a [post-checkout git hook](https://git-scm.com/docs/githooks#_post_checkout)
 cat << EOF > .git/hooks/post-checkout
 #!/usr/bin/env sh
 echo "Indexing Go packages"
-gospelunk index -i ./...
+gospelunk index -q -i ./...
 EOF
 chmod +x .git/hooks/post-checkout
 ```

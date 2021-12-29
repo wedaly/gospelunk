@@ -5,23 +5,25 @@ import (
 	"os"
 )
 
-var verboseFlag bool
+var quietFlag bool
 
-func Init(verbose bool) {
-	verboseFlag = verbose
+func Init(quiet bool) {
+	quietFlag = quiet
 }
 
 func Info(msg string, args ...interface{}) {
-	if verboseFlag {
-		fmt.Fprintf(os.Stderr, msg, args...)
+	if quietFlag {
+		return
 	}
+	fmt.Fprintf(os.Stderr, msg, args...)
 }
 
 func Warn(msg string, args ...interface{}) {
-	if verboseFlag {
-		fmt.Fprintf(os.Stderr, "[WARN] ")
-		fmt.Fprintf(os.Stderr, msg, args...)
+	if quietFlag {
+		return
 	}
+	fmt.Fprintf(os.Stderr, "[WARN] ")
+	fmt.Fprintf(os.Stderr, msg, args...)
 }
 
 func Error(msg string, args ...interface{}) {
