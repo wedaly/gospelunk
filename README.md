@@ -10,6 +10,12 @@ Key Features
 -	Fast lookup and reindexing.
 -	Easy integration with terminal-based workflows (CLI, fzf, editors, ...).
 
+Project Status: Alpha
+---------------------
+
+-	Things might change
+-	Things might be broken
+
 Installation
 ------------
 
