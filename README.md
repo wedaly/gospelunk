@@ -29,10 +29,12 @@ Usage
 Create or update the index:
 
 ```
-gospelunk index .      # index the package in current directory
-gospelunk index ./...  # index packages in current directory and all subdirectories (recursive)
-gospelunk index -i .   # index packages imported by the package in the current directory
+gospelunk index -v .      # index the package in current directory
+gospelunk index -v ./...  # index packages in current directory and all subdirectories (recursive)
+gospelunk index -v -i .   # index packages imported by the package in the current directory
 ```
+
+The index command will skip packages if they haven't changed since they were last indexed.
 
 Search for definitions:
 
