@@ -83,7 +83,7 @@ gospelunk find -f '{{ .Path | BasePath }} {{ .Name }}' .
 Index Database
 --------------
 
-gospelunk stores the search index in a BoltDB database at `$XDG_DATA_HOME/gospelunk/index.db`. The default locations are:
+gospelunk stores the search index in a [BoltDB database](https://github.com/etcd-io/bbolt) at `$XDG_DATA_HOME/gospelunk/index.db`. The default locations are:
 
 -	Linux: `~/.local/share/gospelunk`
 -	macOS: `~/Library/Application Support/gospelunk`
