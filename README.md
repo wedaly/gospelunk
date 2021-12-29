@@ -97,7 +97,7 @@ If you have [fzf](https://github.com/junegunn/fzf) installed, you can add this t
 
 ```
 gofind () {
-	gospelunk find -i -f "+{{.LineNum}} {{.Path|RelPath}} {{.Kind}} {{.Name}}" $1 | fzf | cut -d " " -f 1-2 | xargs less
+	gospelunk find -i -f "+{{.LineNum}} {{.Path|RelPath}} {{.Kind}} {{.Name}}" $@ | fzf | cut -d " " -f 1-2 | xargs less
 }
 ```
 
