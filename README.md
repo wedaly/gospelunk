@@ -50,12 +50,12 @@ gospelunk find -o '{{ .Path }}:{{ .Line }}:{{ .Column }} {{ .Type }} {{ .Name }}
 
 These template variables are defined:
 
-| Variable | Meaning                                                             |
-|----------|---------------------------------------------------------------------|
-| Path     | Absolute path to the file containing the symbol.                    |
-| LineNum  | Line number of the symbol (1-indexed).                              |
-| Name     | The name of the definition.                                         |
-| Kind     | The kind of the definition ("value", "func", "struct", etc.)        |
+| Variable | Meaning                                                      |
+|----------|--------------------------------------------------------------|
+| Path     | Absolute path to the file containing the symbol.             |
+| LineNum  | Line number of the symbol (1-indexed).                       |
+| Name     | The name of the definition.                                  |
+| Kind     | The kind of the definition ("value", "func", "struct", etc.) |
 
 In addition to Go's [predefined global template functions](https://pkg.go.dev/text/template#hdr-Functions), these functions are available:
 
@@ -63,6 +63,37 @@ In addition to Go's [predefined global template functions](https://pkg.go.dev/te
 |----------|---------------|-----------------------------------------------------------------------------------|
 | RelPath  | path (string) | Transform an absolute path to a relative path from the current working directory. |
 | BasePath | path (string) | Returns the last component in the path.                                           |
+
+Integrations
+------------
+
+### Aretext menu commands
+
+Follow instructions in [custom menu commands](https://aretext.org/docs/custom-menu-commands/) to configure:
+
+```
+- name: gospelunk-commands
+  pattern: "**/*.go"
+  config:
+    menuCommands:
+    - name: gospelunk index
+      shellCmd: gospelunk index -i ./... | less
+    - name: gospelunk find
+      shellCmd: gospelunk find -i -f "{{.Path|RelPath}}:{{.LineNum}}:{{.Kind}} {{.Name}}" $WORD $FILEPATH
+      mode: fileLocations
+```
+
+### Git post-checkout hook
+
+Add a [post-checkout git hook](https://git-scm.com/docs/githooks#_post_checkout) to reindex when changing branches (this will replace any existing post-checkout hooks!):
+
+```
+cat << EOF > .git/hooks/post-checkout
+#!/usr/bin/env sh
+gospelunk index -i ./...
+EOF
+chmod +x .git/hooks/post-checkout
+```
 
 Building from Source
 --------------------
