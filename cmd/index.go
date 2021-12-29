@@ -49,7 +49,7 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
 
 		hashString := hash.String()
 		if cachedPkg != nil && !hash.Empty() && cachedPkg.Hash == hashString {
-			log.Info("Skipping pkg %s because it hasn't changed\n", cachedPkg.Name)
+			log.Info("Skipping pkg %s because it hasn't changed\n", cachedPkg.ImportPath)
 			continue
 		}
 
