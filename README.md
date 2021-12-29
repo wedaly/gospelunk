@@ -108,7 +108,7 @@ Add a [post-checkout git hook](https://git-scm.com/docs/githooks#_post_checkout)
 ```
 cat << EOF > .git/hooks/post-checkout
 #!/usr/bin/env sh
-echo "Indexing Go packages"
+echo "Indexing Go packages (gospelunk)"
 gospelunk index -q -i ./...
 EOF
 chmod +x .git/hooks/post-checkout
