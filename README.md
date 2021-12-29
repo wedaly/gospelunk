@@ -80,6 +80,14 @@ For example:
 gospelunk find -f '{{ .Path | BasePath }} {{ .Name }}' .
 ```
 
+Index Database
+--------------
+
+gospelunk stores the search index in a BoltDB database at `$XDG_DATA_HOME/gospelunk/index.db`. The default locations are:
+
+-	Linux: `~/.local/share/gospelunk`
+-	macOS: `~/Library/Application Support/gospelunk`
+
 Integrations
 ------------
 
