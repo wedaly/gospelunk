@@ -83,7 +83,7 @@ Integrations
 
 ### Aretext menu commands
 
-Follow instructions in [custom menu commands](https://aretext.org/docs/custom-menu-commands/) to configure:
+Run `aretext -editconfig`, then add this rule:
 
 ```
 - name: gospelunk-commands
@@ -96,6 +96,8 @@ Follow instructions in [custom menu commands](https://aretext.org/docs/custom-me
       shellCmd: gospelunk find -i -f "{{.Path|RelPath}}:{{.LineNum}}:{{.Kind}} {{.Name}}" "^(.+\.)?${WORD}$" $FILEPATH
       mode: fileLocations
 ```
+
+For more details, see ["Custom Menu Commands" in the aretext docs](https://aretext.org/docs/custom-menu-commands/).
 
 ### Git post-checkout hook
 
