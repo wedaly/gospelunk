@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/wedaly/gospelunk/cmd"
+	"github.com/wedaly/gospelunk/log"
 )
 
 const UsageMsg = `Usage: gospelunk <command> [args]
@@ -46,11 +47,14 @@ func handleIndexCmd(args []string) {
 		fs.PrintDefaults()
 	}
 
+	verboseFlagArg := fs.Bool("v", false, "verbose")
 	includeImportsArg := fs.Bool("i", false, "include imported packages")
 
 	if err := fs.Parse(args); err != nil {
 		panic(err)
 	}
+
+	log.Init(*verboseFlagArg)
 
 	posArgs := fs.Args()
 	if len(posArgs) < 1 {
@@ -82,12 +86,15 @@ func handleFindCmd(args []string) {
 		fs.PrintDefaults()
 	}
 
+	verboseFlagArg := fs.Bool("v", false, "verbose")
 	includeImportsArg := fs.Bool("i", false, "include imported packages")
 	formatTplArg := fs.String("f", "{{ .Path | RelPath }}:{{ .LineNum }} {{ .Kind }} {{ .Name }}", "format the output using Go template syntax")
 
 	if err := fs.Parse(args); err != nil {
 		panic(err)
 	}
+
+	log.Init(*verboseFlagArg)
 
 	posArgs := fs.Args()
 	if len(posArgs) < 1 {
@@ -147,6 +154,6 @@ func printUsage(preamble string, usageMsg string) {
 }
 
 func exitWithError(err error) {
-	fmt.Fprintf(os.Stderr, "%s\n", err)
+	log.Error("%s\n", err)
 	os.Exit(1)
 }

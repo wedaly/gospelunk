@@ -12,6 +12,7 @@ import (
 
 	"github.com/wedaly/gospelunk/db"
 	pb "github.com/wedaly/gospelunk/db/protobuf"
+	"github.com/wedaly/gospelunk/log"
 	"github.com/wedaly/gospelunk/pkgmeta"
 )
 
@@ -154,14 +155,14 @@ func iterPackages(db *db.DB, pkgDirs []string, f func(*pb.Package)) error {
 func RelPathTplFunc() func(string) string {
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "WARN: could not find current working directory (%s)\n", err)
+		log.Warn("could not find current working directory (%s)\n", err)
 		cwd = ""
 	}
 
 	return func(path string) string {
 		relpath, err := filepath.Rel(cwd, path)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "WARN: could not determine relative path (%s)\n", err)
+			log.Warn("could not determine relative path (%s)\n", err)
 			relpath = path
 		}
 		return relpath

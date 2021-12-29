@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -10,19 +9,20 @@ import (
 
 	"github.com/wedaly/gospelunk/db"
 	pb "github.com/wedaly/gospelunk/db/protobuf"
+	"github.com/wedaly/gospelunk/log"
 	"github.com/wedaly/gospelunk/pkgmeta"
 )
 
 // Index adds definitions from Go packages to the search index.
 func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
-	fmt.Printf("Searching for packages matching %v\n", pkgPatterns)
+	log.Info("Searching for packages matching %v\n", pkgPatterns)
 	pkgMetas, err := pkgmeta.Lookup(pkgPatterns)
 	if err != nil {
 		return errors.Wrapf(err, "pkgmeta.Lookup")
 	}
 
 	if includeImports {
-		fmt.Printf("Searching for imported packages\n")
+		log.Info("Searching for imported packages\n")
 		importedPkgMetas, err := pkgmeta.Lookup(uniqueSortedImportPkgNames(pkgMetas))
 		if err != nil {
 			return errors.Wrapf(err, "lookupImportedPackages")
@@ -39,7 +39,7 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
 	for _, pkg := range pkgMetas {
 		hash, err := pkgmeta.HashFileInfo(pkg)
 		if err != nil {
-			fmt.Printf("WARN: could not hash file info for pkg %s (%s)\n", pkg.Name, err)
+			log.Warn("could not hash file info for pkg %s (%s)\n", pkg.Name, err)
 		}
 
 		cachedPkg, err := db.ReadPackage(pkg.Dir)
@@ -49,18 +49,18 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
 
 		hashString := hash.String()
 		if cachedPkg != nil && !hash.Empty() && cachedPkg.Hash == hashString {
-			fmt.Printf("Skipping pkg %s because it hasn't changed\n", cachedPkg.Name)
+			log.Info("Skipping pkg %s because it hasn't changed\n", cachedPkg.Name)
 			continue
 		}
 
-		fmt.Printf("Indexing %s\n", pkg.ImportPath)
+		log.Info("Indexing %s\n", pkg.ImportPath)
 		pbPkg := protobufPackage(pkg)
 		pbPkg.Hash = hashString
 		for _, filename := range pkg.GoFiles {
 			path := filepath.Join(pkg.Dir, filename)
 			defs, err := loadDefsFromGoFile(path)
 			if err != nil {
-				fmt.Printf("WARN: could not index %s (%s)\n", path, err)
+				log.Warn("could not index %s (%s)\n", path, err)
 				continue
 			}
 			pbPkg.GoFiles = append(pbPkg.GoFiles, protobufGoFile(filename, defs))
