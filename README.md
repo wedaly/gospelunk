@@ -19,6 +19,8 @@ Project Status: Alpha
 Installation
 ------------
 
+Once you have [installed Go](https://go.dev/doc/install) (1.17 or later), run this:
+
 ```
 go install github.com/wedaly/gospelunk@latest
 ```
