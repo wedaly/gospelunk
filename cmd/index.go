@@ -14,7 +14,7 @@ import (
 )
 
 // Index adds definitions from Go packages to the search index.
-func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
+func Index(dbPath string, pkgPatterns []string, includeImports bool, transitive bool) error {
 	log.Info("Searching for packages matching %v\n", pkgPatterns)
 	pkgMetas, err := pkgmeta.Lookup(pkgPatterns)
 	if err != nil {
@@ -23,7 +23,7 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
 
 	if includeImports {
 		log.Info("Searching for imported packages\n")
-		importedPkgMetas, err := pkgmeta.Lookup(uniqueSortedImportPkgNames(pkgMetas))
+		importedPkgMetas, err := lookupImportedPackages(pkgMetas, transitive)
 		if err != nil {
 			return errors.Wrapf(err, "lookupImportedPackages")
 		}
@@ -72,6 +72,37 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool) error {
 	}
 
 	return nil
+}
+
+func lookupImportedPackages(pkgMetas []pkgmeta.Package, transitive bool) ([]pkgmeta.Package, error) {
+	importedSet := make(map[string]pkgmeta.Package, 0)
+	for len(pkgMetas) > 0 {
+		importedPkgMetas, err := pkgmeta.Lookup(uniqueSortedImportPkgNames(pkgMetas))
+		if err != nil {
+			return nil, errors.Wrapf(err, "pkgmeta.Lookup")
+		}
+
+		pkgMetas = nil
+		for _, pkg := range importedPkgMetas {
+			if _, ok := importedSet[pkg.Dir]; !ok {
+				importedSet[pkg.Dir] = pkg
+				pkgMetas = append(pkgMetas, pkg)
+			}
+		}
+
+		if !transitive {
+			break
+		}
+	}
+
+	result := make([]pkgmeta.Package, 0, len(importedSet))
+	for _, pkg := range importedSet {
+		result = append(result, pkg)
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Name < result[j].Name
+	})
+	return result, nil
 }
 
 func uniqueSortedImportPkgNames(pkgMetas []pkgmeta.Package) []string {

@@ -49,6 +49,7 @@ func handleIndexCmd(args []string) {
 
 	quietFlagArg := fs.Bool("q", false, "quiet")
 	includeImportsArg := fs.Bool("i", false, "include imported packages")
+	transitiveArg := fs.Bool("t", false, "include transitive dependencies")
 
 	if err := fs.Parse(args); err != nil {
 		panic(err)
@@ -73,7 +74,7 @@ func handleIndexCmd(args []string) {
 	}
 
 	packages := posArgs
-	if err := cmd.Index(dbPath, packages, *includeImportsArg); err != nil {
+	if err := cmd.Index(dbPath, packages, *includeImportsArg, *transitiveArg); err != nil {
 		exitWithError(err)
 	}
 }

@@ -31,9 +31,10 @@ Usage
 Create or update the index:
 
 ```
-gospelunk index .      # index the package in current directory
-gospelunk index ./...  # index packages in current directory and all subdirectories (recursive)
-gospelunk index -i .   # index packages imported by the package in the current directory
+gospelunk index .       # index the package in current directory
+gospelunk index ./...   # index packages in current directory and all subdirectories (recursive)
+gospelunk index -i .    # index packages imported by the package in the current directory
+gospelunk index -i -t . # index packages, including direct and transitive imports.
 ```
 
 The index command will skip packages if they haven't changed since they were last indexed.
@@ -119,7 +120,7 @@ Run `aretext -editconfig`, then add this rule:
   config:
     menuCommands:
     - name: gospelunk index
-      shellCmd: gospelunk index -i ./... | less
+      shellCmd: gospelunk index -i -t ./... | less
     - name: gospelunk find
       shellCmd: gospelunk find -i -f "{{.Path|RelPath}}:{{.LineNum}}:{{.Kind}} {{.Name}}" "^(.+\.)?${WORD}$" $FILEPATH
       mode: fileLocations
@@ -135,7 +136,7 @@ Add a [post-checkout git hook](https://git-scm.com/docs/githooks#_post_checkout)
 cat << EOF > .git/hooks/post-checkout
 #!/usr/bin/env sh
 echo "Indexing Go packages (gospelunk)"
-gospelunk index -q -i ./...
+gospelunk index -q -i -t ./...
 EOF
 chmod +x .git/hooks/post-checkout
 ```
