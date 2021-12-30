@@ -35,6 +35,7 @@ type Module struct {
 // this will fail if the current working directory is not part of a Go module.
 func Lookup(pkgPatterns []string) ([]Package, error) {
 	args := []string{"-json"}
+	pkgPatterns = filterPseudoPackages(pkgPatterns)
 	args = append(args, pkgPatterns...)
 	data, err := execGoListCmd(args...)
 	if err != nil {
@@ -47,6 +48,7 @@ func Lookup(pkgPatterns []string) ([]Package, error) {
 // See `go help packages` for details about the format of pkgPatterns.
 func ListDirs(pkgPatterns []string) ([]string, error) {
 	args := []string{"-find", "-f", "{{ .Dir }}"}
+	pkgPatterns = filterPseudoPackages(pkgPatterns)
 	args = append(args, pkgPatterns...)
 	data, err := execGoListCmd(args...)
 	if err != nil {
@@ -54,6 +56,18 @@ func ListDirs(pkgPatterns []string) ([]string, error) {
 	}
 	dirs := parseGoListDirsOutput(data)
 	return dirs, nil
+}
+
+func filterPseudoPackages(pkgPatterns []string) []string {
+	result := make([]string, 0, len(pkgPatterns))
+	for _, p := range pkgPatterns {
+		if p == "C" {
+			// "C" is a pseudo-package used by cgo
+			continue
+		}
+		result = append(result, p)
+	}
+	return result
 }
 
 func execGoListCmd(args ...string) ([]byte, error) {
