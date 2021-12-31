@@ -10,6 +10,13 @@ Key Features
 -	Fast lookup and reindexing.
 -	Easy integration with terminal-based workflows (CLI, fzf, editors, ...).
 
+Demo
+----
+
+[![gospelunk demo](https://asciinema.org/a/459199.svg)](https://asciinema.org/a/459199?speed=2)
+
+See [this blog post](https://dev-nonsense.com/posts/gospelunk/) for more!
+
 Project Status: Alpha
 ---------------------
 
