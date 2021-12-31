@@ -20,6 +20,7 @@ const (
 	GoDefKindFunc
 	GoDefKindTypeStruct
 	GoDefKindStructField
+	GoDefKindStructMethod
 	GoDefKindTypeInterface
 	GoDefKindInterfaceMethod
 	GoDefKindTypeOther
@@ -35,6 +36,8 @@ func (k GoDefKind) String() string {
 		return "struct"
 	case GoDefKindStructField:
 		return "field"
+	case GoDefKindStructMethod:
+		return "method"
 	case GoDefKindTypeInterface:
 		return "interface"
 	case GoDefKindInterfaceMethod:
@@ -166,12 +169,31 @@ func loadDefsFromFuncDecl(funcDecl *ast.FuncDecl, fset *token.FileSet, defs *[]G
 	}
 	lineNum := fset.Position(funcDecl.Pos()).Line
 	funcName := funcDecl.Name.Name
+	name, kind := funcName, GoDefKindFunc
+	if funcDecl.Recv != nil {
+		name = fmt.Sprintf("%s.%s", findFuncRecvName(funcDecl), funcName)
+		kind = GoDefKindStructMethod
+	}
 	*defs = append(*defs, GoDef{
-		Name:     funcName,
-		Kind:     GoDefKindFunc,
+		Name:     name,
+		Kind:     kind,
 		LineNum:  lineNum,
 		Exported: isExported(funcName),
 	})
+}
+
+func findFuncRecvName(funcDecl *ast.FuncDecl) string {
+	var typeName string
+	for _, field := range funcDecl.Recv.List {
+		ast.Inspect(field.Type, func(node ast.Node) bool {
+			if ident, ok := node.(*ast.Ident); ok {
+				typeName = ident.Name
+				return false
+			}
+			return true
+		})
+	}
+	return typeName
 }
 
 func isExported(name string) bool {
