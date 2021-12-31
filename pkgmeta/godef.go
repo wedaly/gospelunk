@@ -18,11 +18,11 @@ type GoDefKind int
 const (
 	GoDefKindValue = GoDefKind(iota)
 	GoDefKindFunc
+	GoDefKindMethod
 	GoDefKindTypeStruct
 	GoDefKindStructField
-	GoDefKindStructMethod
 	GoDefKindTypeInterface
-	GoDefKindInterfaceMethod
+	GoDefKindMethodSpec
 	GoDefKindTypeOther
 )
 
@@ -36,12 +36,12 @@ func (k GoDefKind) String() string {
 		return "struct"
 	case GoDefKindStructField:
 		return "field"
-	case GoDefKindStructMethod:
+	case GoDefKindMethod:
 		return "method"
 	case GoDefKindTypeInterface:
 		return "interface"
-	case GoDefKindInterfaceMethod:
-		return "method"
+	case GoDefKindMethodSpec:
+		return "methodSpec"
 	case GoDefKindTypeOther:
 		return "type"
 	default:
@@ -154,7 +154,7 @@ func loadDefsFromInterfaceType(interfaceType *ast.InterfaceType, fset *token.Fil
 				methodName := nameIdent.Name
 				*defs = append(*defs, GoDef{
 					Name:     fmt.Sprintf("%s.%s", typeName, methodName),
-					Kind:     GoDefKindInterfaceMethod,
+					Kind:     GoDefKindMethodSpec,
 					LineNum:  lineNum,
 					Exported: isExported(methodName),
 				})
@@ -172,7 +172,7 @@ func loadDefsFromFuncDecl(funcDecl *ast.FuncDecl, fset *token.FileSet, defs *[]G
 	name, kind := funcName, GoDefKindFunc
 	if funcDecl.Recv != nil {
 		name = fmt.Sprintf("%s.%s", findFuncRecvName(funcDecl), funcName)
-		kind = GoDefKindStructMethod
+		kind = GoDefKindMethod
 	}
 	*defs = append(*defs, GoDef{
 		Name:     name,
