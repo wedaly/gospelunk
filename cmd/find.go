@@ -95,12 +95,14 @@ func getMatchingPackagesFromDb(dbPath string, pkgPatterns []string, includeImpor
 	}
 
 	packages := make([]matchedPackage, 0, len(pkgDirs))
+	seenPkgDirSet := make(map[string]struct{}, 0)
 	importSet := make(map[string]struct{}, 0)
 	err = iterPackages(db, pkgDirs, func(pkg *pb.Package) {
 		packages = append(packages, matchedPackage{
 			pkg:        pkg,
 			fromImport: false,
 		})
+		seenPkgDirSet[pkg.Dir] = struct{}{}
 		if includeImports {
 			for _, importPkgName := range pkg.Imports {
 				importSet[importPkgName] = struct{}{}
@@ -125,10 +127,14 @@ func getMatchingPackagesFromDb(dbPath string, pkgPatterns []string, includeImpor
 			}
 
 			err = iterPackages(db, pkgDirs, func(pkg *pb.Package) {
+				if _, ok := seenPkgDirSet[pkg.Dir]; ok {
+					return
+				}
 				packages = append(packages, matchedPackage{
 					pkg:        pkg,
 					fromImport: true,
 				})
+				seenPkgDirSet[pkg.Dir] = struct{}{}
 			})
 			if err != nil {
 				return nil, err
