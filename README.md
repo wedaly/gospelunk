@@ -110,7 +110,7 @@ gofind () {
     gospelunk find -i -f "+{{.LineNum}} {{.Path|RelPath}} {{.Kind}} {{.Name}}" $@ \
     | fzf \
     | cut -d " " -f 1-2 \
-    | xargs less
+    | xargs -r less
 }
 ```
 
