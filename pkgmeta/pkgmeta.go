@@ -3,6 +3,7 @@ package pkgmeta
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -22,6 +23,7 @@ type Package struct {
 	Imports     []string // import paths used by this package
 	TestImports []string // imports from test go files
 	Module      *Module  // info about package's containing module, if any (can be nil)
+	Match       []string // command-line patterns matching this package
 }
 
 func (p Package) NumGoFiles() int {
@@ -67,7 +69,36 @@ func Lookup(pkgPatterns []string) ([]Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	return parseGoListJsonOutput(data)
+
+	packages, err := parseGoListJsonOutput(data)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := validatePackages(packages); err != nil {
+		return nil, err
+
+	}
+	return packages, nil
+}
+
+func validatePackages(packages []Package) error {
+	var invalidMatches []string
+	for _, pkg := range packages {
+		// Can happen if the user provides a path to a file instead of a package.
+		// `go list` will return information for the specific file, but not
+		// the other files in the package, so symbols referenced in the file
+		// will be missing from the index.
+		if pkg.ImportPath == "command-line-arguments" {
+			invalidMatches = append(invalidMatches, pkg.Match...)
+		}
+	}
+
+	if len(invalidMatches) > 0 {
+		return fmt.Errorf("Invalid packages: [%s]", strings.Join(invalidMatches, ", "))
+	}
+
+	return nil
 }
 
 // ListDirs retrieves a list of package directories matching pkgPatterns.
