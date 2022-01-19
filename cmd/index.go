@@ -56,7 +56,7 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool, transitive 
 		log.Info("Indexing %s\n", pkg.ImportPath)
 		pbPkg := protobufPackage(pkg)
 		pbPkg.Hash = hashString
-		for _, filename := range pkg.GoFiles {
+		for _, filename := range pkg.AllGoFiles() {
 			path := filepath.Join(pkg.Dir, filename)
 			defs, err := loadDefsFromGoFile(path)
 			if err != nil {
@@ -108,7 +108,7 @@ func lookupImportedPackages(pkgMetas []pkgmeta.Package, transitive bool) ([]pkgm
 func uniqueSortedImportPkgNames(pkgMetas []pkgmeta.Package) []string {
 	nameSet := make(map[string]struct{}, 0)
 	for _, pkg := range pkgMetas {
-		for _, importPkgName := range pkg.Imports {
+		for _, importPkgName := range pkg.AllImports() {
 			nameSet[importPkgName] = struct{}{}
 		}
 	}
@@ -138,14 +138,12 @@ func loadDefsFromGoFile(path string) ([]pkgmeta.GoDef, error) {
 }
 
 func protobufPackage(pkg pkgmeta.Package) *pb.Package {
-	imports := make([]string, len(pkg.Imports))
-	copy(imports, pkg.Imports)
 	return &pb.Package{
 		Name:       pkg.Name,
 		Dir:        pkg.Dir,
 		ImportPath: pkg.ImportPath,
-		GoFiles:    make([]*pb.GoFile, 0, len(pkg.GoFiles)),
-		Imports:    imports,
+		GoFiles:    make([]*pb.GoFile, 0, pkg.NumGoFiles()),
+		Imports:    pkg.AllImports(),
 	}
 }
 

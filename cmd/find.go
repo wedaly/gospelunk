@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/pkg/errors"
@@ -49,8 +50,8 @@ func Find(dbPath string, query string, pkgPatterns []string, includeImports bool
 	for _, mp := range matchedPkgs {
 		for _, goFile := range mp.pkg.GoFiles {
 			for _, goDef := range goFile.Defs {
-				if mp.fromImport && !goDef.Exported {
-					// Skip private definitions from imported packages.
+				if mp.fromImport && (!goDef.Exported || isTestFile(goFile)) {
+					// Skip private definitions and tests from imported packages.
 					continue
 				}
 
@@ -74,6 +75,10 @@ func Find(dbPath string, query string, pkgPatterns []string, includeImports bool
 	}
 
 	return nil
+}
+
+func isTestFile(goFile *pb.GoFile) bool {
+	return strings.HasSuffix(goFile.Filename, "_test.go")
 }
 
 // matchedPackage represents a package from the database.

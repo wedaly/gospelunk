@@ -13,12 +13,38 @@ import (
 
 // Package represents metadata about a package.
 type Package struct {
-	Name       string   // package name
-	Dir        string   // directory containing package sources
-	ImportPath string   // import path of the package
-	GoFiles    []string // filenames of .go source files
-	Imports    []string // import paths used by this package
-	Module     *Module  // info about package's containing module, if any (can be nil)
+	Name        string   // package name
+	Dir         string   // directory containing package sources
+	ImportPath  string   // import path of the package
+	GoFiles     []string // filenames of .go source files
+	CgoFiles    []string // filenames of .go files that import "C"
+	TestGoFiles []string // _test.go files in package
+	Imports     []string // import paths used by this package
+	TestImports []string // imports from test go files
+	Module      *Module  // info about package's containing module, if any (can be nil)
+}
+
+func (p Package) NumGoFiles() int {
+	return len(p.GoFiles) + len(p.CgoFiles) + len(p.TestGoFiles)
+}
+
+func (p Package) AllGoFiles() []string {
+	result := make([]string, 0, p.NumGoFiles())
+	result = append(result, p.GoFiles...)
+	result = append(result, p.CgoFiles...)
+	result = append(result, p.TestGoFiles...)
+	return result
+}
+
+func (p Package) NumImports() int {
+	return len(p.Imports) + len(p.TestImports)
+}
+
+func (p Package) AllImports() []string {
+	result := make([]string, 0, p.NumImports())
+	result = append(result, p.Imports...)
+	result = append(result, p.TestImports...)
+	return result
 }
 
 // Module represents metadata about a Go module.
