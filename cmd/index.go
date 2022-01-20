@@ -75,9 +75,13 @@ func Index(dbPath string, pkgPatterns []string, includeImports bool, transitive 
 }
 
 func lookupImportedPackages(pkgMetas []pkgmeta.Package, transitive bool) ([]pkgmeta.Package, error) {
+	depth := 0
 	importedSet := make(map[string]pkgmeta.Package, 0)
 	for len(pkgMetas) > 0 {
-		importedPkgMetas, err := pkgmeta.Lookup(uniqueSortedImportPkgNames(pkgMetas))
+		// include tests only for direct imports because `go list` exits with the error
+		// "updates to go.mod needed" when looking up transitive test imports.
+		includeTests := bool(depth == 0)
+		importedPkgMetas, err := pkgmeta.Lookup(uniqueSortedImportPkgNames(pkgMetas, includeTests))
 		if err != nil {
 			return nil, errors.Wrapf(err, "pkgmeta.Lookup")
 		}
@@ -93,6 +97,7 @@ func lookupImportedPackages(pkgMetas []pkgmeta.Package, transitive bool) ([]pkgm
 		if !transitive {
 			break
 		}
+		depth++
 	}
 
 	result := make([]pkgmeta.Package, 0, len(importedSet))
@@ -105,10 +110,17 @@ func lookupImportedPackages(pkgMetas []pkgmeta.Package, transitive bool) ([]pkgm
 	return result, nil
 }
 
-func uniqueSortedImportPkgNames(pkgMetas []pkgmeta.Package) []string {
+func uniqueSortedImportPkgNames(pkgMetas []pkgmeta.Package, includeTests bool) []string {
 	nameSet := make(map[string]struct{}, 0)
 	for _, pkg := range pkgMetas {
-		for _, importPkgName := range pkg.Imports {
+		var imports []string
+		if includeTests {
+			imports = pkg.AllImports()
+		} else {
+			imports = pkg.Imports
+		}
+
+		for _, importPkgName := range imports {
 			nameSet[importPkgName] = struct{}{}
 		}
 	}
