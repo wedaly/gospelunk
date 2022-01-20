@@ -130,7 +130,7 @@ Run `aretext -editconfig`, then add this rule:
   config:
     menuCommands:
     - name: gospelunk index
-      shellCmd: gospelunk index -i -t ./... | less
+      shellCmd: gospelunk index -i -t $(dirname "$FILEPATH") | less
     - name: gospelunk find
       shellCmd: gospelunk find -i -f "{{.Path|RelPath}}:{{.LineNum}}:{{.Kind}} {{.Name}}" "^(.+\.)?${WORD}$" $FILEPATH
       mode: fileLocations
