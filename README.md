@@ -136,6 +136,8 @@ Run `aretext -editconfig`, then add this rule:
       mode: fileLocations
 ```
 
+This assumes that aretext is run from within a Go module, and the Go file is a package in that module.
+
 For more details, see ["Custom Menu Commands" in the aretext docs](https://aretext.org/docs/custom-menu-commands/).
 
 ### Git post-checkout hook
