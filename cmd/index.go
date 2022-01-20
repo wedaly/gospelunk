@@ -108,7 +108,7 @@ func lookupImportedPackages(pkgMetas []pkgmeta.Package, transitive bool) ([]pkgm
 func uniqueSortedImportPkgNames(pkgMetas []pkgmeta.Package) []string {
 	nameSet := make(map[string]struct{}, 0)
 	for _, pkg := range pkgMetas {
-		for _, importPkgName := range pkg.AllImports() {
+		for _, importPkgName := range pkg.Imports {
 			nameSet[importPkgName] = struct{}{}
 		}
 	}
