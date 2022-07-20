@@ -5,10 +5,12 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sync"
+
 	"github.com/wedaly/gospelunk/pkgmeta"
 )
 
-const NUM_WORKERS = 16
+const MAX_WORKERS = 16
 
 func main() {
 	if len(os.Args) < 2 {
@@ -18,6 +20,7 @@ func main() {
 
 	root := os.Args[1]
 
+	semaphoreChan := make(chan struct{}, MAX_WORKERS)
 	var mu sync.Mutex
 	var fileCount, defCount int
 	var wg sync.WaitGroup
@@ -29,29 +32,34 @@ func main() {
 		if filepath.Ext(path) == ".go" {
 			wg.Add(1)
 			go func(path string) {
+				semaphoreChan <- struct{}{}
 				defer wg.Done()
 
 				f, err := os.Open(path)
 				if err != nil {
-					return err
+					fmt.Printf("Could not open file %s: %s\n", path, err)
+					<-semaphoreChan
+					return
 				}
 				defer f.Close()
 
 				godefs, err := pkgmeta.LoadGoDefs(f)
 				if err != nil {
-					return err
+					fmt.Printf("Could not parse file %s: %s\n", path, err)
+					<-semaphoreChan
+					return
 				}
 
 				mu.Lock()
 				fileCount++
 				defCount += len(godefs)
 				mu.Unlock()
-
+				<-semaphoreChan
 			}(path)
 		}
 		return nil
 	})
 	wg.Wait()
 
-	fmt.Printf("Parsed %d files with %d defs", fileCount, defCount)
+	fmt.Printf("Parsed %d files with %d defs\n", fileCount, defCount)
 }
