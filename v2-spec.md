@@ -27,9 +27,17 @@ Main entry point to find something in one of your projects.
 
 * search box
 * checkbox "include tests"
-* help text describing filter syntax
+* help text describing filter syntax (see below)
+* submit button with action `POST /search/defs`
 
-The search box parses the query into a sequence of "filters", separated by whitespace:
+
+### POST /search/defs
+
+POST params:
+* `query` (string) specifies the search query.
+* `includeTests` (bool) specifies whether to include tests in the results.
+
+The query is parsed into a sequence of "filters", separated by whitespace:
 
 * `in:<pkg>` search only package paths matching `pkg` regex (including substring matches).
 * `type:<type>` search only definitions of the specified type (`func`, `struct`, `interface`, `method`, `string`, etc.)
@@ -37,25 +45,31 @@ The search box parses the query into a sequence of "filters", separated by white
 
 Filters with the same prefix are OR'd together; filters with different prefixes are AND'd. For example, `Foo in:foo in:bar type:string type:func` would search in packages matching "foo" OR "bar" and would include only definitions with type "string" OR "func".
 
+The response is an HTML page containing search results:
+
+* package, linked to `/go/{pkg}`
+* definition type ("func", "struct", etc.)
+* definition name, linked to `/go/{pkg}/defs/{name}`
+
+
+### GET /go/{pkg}/defs/{name}/refs
+
+Search for references to the definition.
+
+The response is an HTML page containing the search results:
+
+* package, linked to `/go/{pkg}`
+* file name and line number, linked to `/go/{pkg}/files/{name}.go?line={line}`
+
+
+### GET /file/{path}
+
+Lookup the Go module and package containing `path` (which should be absolute).
+If the package exists, and the file has a ".go" extension, redirect to `/go/{pkg}/files/{name}.go`
+Otherwise, return a 404 not found.
 
 
 ```
-GET /
-  search interface
-
-POST /search/defs
-POST /search/refs
-  run a search of all modules in root dirs
-  show results page
-  slightly different UI for defs/refs (for refs, already know what we're 
-  looking for, so no need to show the symbol name in each result)
-  ref search isn't module specific (looking for everything referring to that mod+pkg+symbol,
-  even if it's using a different module version)
-
-GET /file/{path}
-  path should be absolute
-  lookup module/pkg for path
-  redirect to /go/{module}/{pkg}/files/{name}.go
 
 GET /go/{module}
 GET /go/{module}/{pkg}
