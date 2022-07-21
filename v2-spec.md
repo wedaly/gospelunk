@@ -8,6 +8,17 @@ Go spelunking! Browser-based tool for exploring large Go projects.
 * Efficient on-the-fly search -- never wait for an index to rebuild.
 * Minimalist interface in plain HTML.
 
+
+## CLI
+
+Start the server:
+```
+gospelunk --address <host>:<port> <directory>
+```
+
+Go modules in `directory` (recursive) will be searched. Possible to specify multiple directories. If the same module appears in multiple locations, gospelunk will print a warning and choose the one with the shortest path.
+
+
 ## URL structure
 
 ```
