@@ -67,13 +67,21 @@ Show information about a Go package:
 * name
 * module, linked to `/go/{module}`
 * imported packages, linked to `/go/{module}/{pkg}/imports/{module}/{pkg}`
-* definitions, grouped by type and public/private, linked to `/go/{module}/{pkg}/defs/{name}`
-tests?
+* definitions (grouped by type, public/private, and test/non-test), linked to `/go/{module}/{pkg}/defs/{name}`
 
 
 ### GET /go/{module}/{pkg}/defs/{name}
 
-TODO: lookup a def
+Show information about a Go definition.
+
+* name
+* type (struct, func, etc.)
+* package, linked to `/go/{module}/{pkg}`
+* file location, linked to `/go/{module}/{pkg}/files/{name}.go?line={line}`
+* references, linked to `/go/{module}/{pkg}/defs/{name}/refs`
+* docstring
+* for structs, list of fields and methods, linked to `/go/{module}/{pkg}/defs/{name}`
+* for interfaces, list of method specs
 
 
 ### GET /go/{module}/{pkg}/defs/{name}/refs
@@ -88,7 +96,21 @@ The response is an HTML page containing the search results:
 
 ### GET /go/{module}/{pkg}/files/{name}.go
 
-TODO: optional ?line
+* full path to file, linked to `file://{path}`
+* copy path to clipboard button
+* contents of file, with line numbers
+
+The optional anchor `#l[0-9]+` can be used to specify a line number in the file.
+
+Within the file contents:
+
+* The top-level `package` statement links to `/go/{module}/{pkg}`.
+
+* Each import statement links to `/go/{module}/{pkg}/imports/{module}/{pkg}`.
+
+* Links for top-level definitions and types. For definitions within the package, link to `/go/{module}/{pkg}/defs/{name}`, and for definitions in other packages, link to `/go/{module}/{pkg}/imports/{module}/{pkg}/defs/{name}`. This needs to handle user-defined package names correctly ("import f golang.org/x/foobar")
+
+* Local variables within a function link to the line number anchor in the file where the variable is defined. This needs to handle variable shadowing correctly.
 
 
 ### GET /file/{path}
