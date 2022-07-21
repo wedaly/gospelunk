@@ -16,7 +16,7 @@ Start the server:
 gospelunk --address <host>:<port> <directory>
 ```
 
-Go modules in `directory` (recursive) will be searched. Possible to specify multiple directories. If the same module appears in multiple locations, gospelunk will print a warning and choose the one with the shortest path. If `directory` is ommitted, use the current working directory.
+Go modules in `directory` (recursive) will be searched. Possible to specify multiple directories. If the same module appears in multiple locations, gospelunk will print a warning and choose the one with the shortest path. If `directory` is ommitted, default to `$GOPATH/src`.
 
 
 ## URL structure
