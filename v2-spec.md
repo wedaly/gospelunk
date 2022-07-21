@@ -100,16 +100,21 @@ Otherwise, return a 404 not found.
 
 ### GET /go/{module}/{pkg}/imports/{module}
 
-TODO
+Same as `/go/{module}`, but construct links relative to `/go/{module}/{pkg}/imports`.
+
 
 ### GET /go/{module}/{pkg}/imports/{module}/{pkg}
 
-TODO
+Same as `/go/{module}/{pkg}`, but construct links relative to `/go/{module}/{pkg}/imports`.
+
 
 ### GET /go/{module}/{pkg}/imports/{module}/{pkg}/defs/{name}
 
-TODO
+Same as `/go/{module}/{pkg}/defs/{name}`, but construct links relative to `/go/{module}/{pkg}/imports`.
+
 
 ### GET /go/{module}/{pkg}/imports/{module}/{pkg}/files/{name}.go
 
-TODO
+Same as `/go/{module}/{pkg}/files/{name}.go`, but construct links relative to `/go/{module}/{pkg}/imports`.
+
+This is necessary to resolve imports relative to the original module.
