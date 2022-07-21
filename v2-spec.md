@@ -47,19 +47,39 @@ Filters with the same prefix are OR'd together; filters with different prefixes 
 
 The response is an HTML page containing search results:
 
-* package, linked to `/go/{pkg}`
+* package, linked to `/go/{module}/{pkg}`
 * definition type ("func", "struct", etc.)
-* definition name, linked to `/go/{pkg}/defs/{name}`
+* definition name, linked to `/go/{module}/{pkg}/defs/{name}`
 
 
-### GET /go/{pkg}/defs/{name}/refs
+### GET /go/{module}
+
+TODO: lookup a module
+
+
+### GET /go/{module}/{pkg}
+
+TODO: lookup a package
+
+
+### GET /go/{module}/{pkg}/defs/{name}
+
+TODO: lookup a def
+
+
+### GET /go/{module}/{pkg}/defs/{name}/refs
 
 Search for references to the definition.
 
 The response is an HTML page containing the search results:
 
-* package, linked to `/go/{pkg}`
-* file name and line number, linked to `/go/{pkg}/files/{name}.go?line={line}`
+* package, linked to `/go/{module}/{pkg}`
+* file name and line number, linked to `/go/{module}/{pkg}/files/{name}.go?line={line}`
+
+
+### GET /go/{module}/{pkg}/files/{name}.go
+
+TODO: optional ?line
 
 
 ### GET /file/{path}
@@ -69,14 +89,18 @@ If the package exists, and the file has a ".go" extension, redirect to `/go/{pkg
 Otherwise, return a 404 not found.
 
 
-```
+### GET /go/{module}/{pkg}/imports/{module}
 
-GET /go/{module}
-GET /go/{module}/{pkg}
-GET /go/{module}/{pkg}/defs/{name}
-GET /go/{module}/{pkg}/files/{name}.go
-GET /go/{module}/{pkg}/imports/{module}
-GET /go/{module}/{pkg}/imports/{module}/{pkg}
-GET /go/{module}/{pkg}/imports/{module}/{pkg}/defs/{name}
-GET /go/{module}/{pkg}/imports/{module}/{pkg}/files/{name}.go
-```
+TODO
+
+### GET /go/{module}/{pkg}/imports/{module}/{pkg}
+
+TODO
+
+### GET /go/{module}/{pkg}/imports/{module}/{pkg}/defs/{name}
+
+TODO
+
+### GET /go/{module}/{pkg}/imports/{module}/{pkg}/files/{name}.go
+
+TODO
