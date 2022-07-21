@@ -54,12 +54,21 @@ The response is an HTML page containing search results:
 
 ### GET /go/{module}
 
-TODO: lookup a module
+Show information about a Go module:
+
+* name
+* list of packages, linked to `/go/{module}/{pkg}`
 
 
 ### GET /go/{module}/{pkg}
 
-TODO: lookup a package
+Show information about a Go package:
+
+* name
+* module, linked to `/go/{module}`
+* imported packages, linked to `/go/{module}/{pkg}/imports/{module}/{pkg}`
+* definitions, grouped by type and public/private, linked to `/go/{module}/{pkg}/defs/{name}`
+tests?
 
 
 ### GET /go/{module}/{pkg}/defs/{name}
