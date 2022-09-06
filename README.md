@@ -24,7 +24,7 @@ Commands
 To lookup type information and the definition for an identifier in a Go file:
 
 ```
-gospelunk index -f <FILE> -l <LINE> -c <COLUMN>
+gospelunk inspect -f <FILE> -l <LINE> -c <COLUMN>
 ```
 
 -	Line and column numbers are 1-indexed, and the column unit is bytes.
