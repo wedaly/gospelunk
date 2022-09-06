@@ -1,25 +1,22 @@
-all: generate fmt build vet test
+.PHONY: all fmt build test install vet bench clean
+
+all: fmt build vet test
 
 fmt:
-	goimports -w -local "github.com/wedaly" .
-
-generate:
-	go generate ./...
+	gofmt -s -w .
+	goimports -w -local "github.com/wedaly/gospelunk" .
 
 build:
-	go build -o gospelunk main.go
-
-install:
-	go install
+	go build -o gospelunk github.com/wedaly/gospelunk
 
 test:
 	go test ./...
 
+install:
+	go install
+
 vet:
 	go vet ./...
-
-bench:
-	go test ./... -bench=.
 
 clean:
 	rm -rf gospelunk
