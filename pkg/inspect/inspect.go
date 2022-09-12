@@ -157,9 +157,9 @@ func astIdentForLineAndCol(astFile *ast.File, fset *token.FileSet, line int, col
 }
 
 func resultForAstIdent(pkg *packages.Package, ident *ast.Ident) *Result {
-	obj, ok := pkg.TypesInfo.Defs[ident]
+	obj, ok := pkg.TypesInfo.Uses[ident]
 	if !ok {
-		obj = pkg.TypesInfo.Uses[ident]
+		obj = pkg.TypesInfo.Defs[ident]
 	}
 
 	if obj == nil || !obj.Pos().IsValid() {

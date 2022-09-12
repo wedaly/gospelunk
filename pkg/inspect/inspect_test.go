@@ -359,6 +359,30 @@ func TestInspectNil(t *testing.T) {
 	require.Nil(t, result)
 }
 
+func TestInspectEmbeddedStruct(t *testing.T) {
+	result, err := Inspect(FileLoc{
+		Path:   "testdata/testmodule007/struct.go",
+		Line:   6,
+		Column: 10,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	expected := &Result{
+		Name: "EmbeddedStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule007/subpkg.EmbeddedStruct",
+		Def: Definition{
+			Pkg:  "subpkg",
+			Name: "EmbeddedStruct",
+			FileLoc: FileLoc{
+				Path:   absPath(t, "testdata/testmodule007/subpkg/struct.go"),
+				Line:   3,
+				Column: 6,
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
 func BenchmarkInspect(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := Inspect(FileLoc{
