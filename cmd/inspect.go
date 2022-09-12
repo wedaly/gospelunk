@@ -3,13 +3,12 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"text/template"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/wedaly/gospelunk/pkg/inspect"
+	"github.com/wedaly/gospelunk/pkg/output"
 )
 
 var (
@@ -24,11 +23,9 @@ var inspectCmd = &cobra.Command{
 	Short: "inspect Go code",
 	Long:  "inspect type information and definition location for an identifier in a Go source file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		tmpl, err := template.New("template").
-			Funcs(template.FuncMap{"RelPath": RelPathTplFunc()}).
-			Parse(TemplateArg)
+		tmpl, err := output.Template(TemplateArg)
 		if err != nil {
-			return errors.Wrapf(err, "template.Parse")
+			return err
 		}
 
 		loc := inspect.FileLoc{Path: FileArg, Line: LineArg, Column: ColumnArg}
@@ -49,21 +46,6 @@ var inspectCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func RelPathTplFunc() func(string) string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		cwd = ""
-	}
-
-	return func(path string) string {
-		relpath, err := filepath.Rel(cwd, path)
-		if err != nil {
-			relpath = path
-		}
-		return relpath
-	}
 }
 
 func init() {
