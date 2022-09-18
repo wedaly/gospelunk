@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"github.com/wedaly/gospelunk/pkg/file"
 	"github.com/wedaly/gospelunk/pkg/inspect"
 	"github.com/wedaly/gospelunk/pkg/output"
 )
@@ -28,14 +29,18 @@ var inspectCmd = &cobra.Command{
 			return err
 		}
 
-		loc := inspect.FileLoc{Path: InspectFileArg, Line: InspectLineArg, Column: InspectColumnArg}
+		loc := file.Loc{
+			Path:   InspectFileArg,
+			Line:   InspectLineArg,
+			Column: InspectColumnArg,
+		}
 		result, err := inspect.Inspect(loc)
 		if err != nil {
 			return err
 		}
 
 		if result == nil {
-			fmt.Fprintf(os.Stderr, "No results found for %s:%d:%d\n", InspectFileArg, InspectLineArg, InspectColumnArg)
+			fmt.Fprintf(os.Stderr, "No results found for %s", loc)
 			return nil
 		}
 

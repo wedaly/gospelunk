@@ -10,16 +10,12 @@ import (
 
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
+
+	"github.com/wedaly/gospelunk/pkg/file"
 )
 
-type FileLoc struct {
-	Path   string
-	Line   int
-	Column int
-}
-
 type Definition struct {
-	FileLoc
+	file.Loc
 	Pkg  string
 	Name string
 }
@@ -30,7 +26,7 @@ type Result struct {
 	Def  Definition
 }
 
-func Inspect(loc FileLoc) (*Result, error) {
+func Inspect(loc file.Loc) (*Result, error) {
 	pkg, err := loadGoPackage(loc.Path, loc.Line)
 	if err != nil {
 		return nil, err
@@ -184,7 +180,7 @@ func resultForAstIdent(pkg *packages.Package, ident *ast.Ident) *Result {
 		Def: Definition{
 			Pkg:  pkgName,
 			Name: obj.Name(),
-			FileLoc: FileLoc{
+			Loc: file.Loc{
 				Path:   position.Filename,
 				Line:   position.Line,
 				Column: position.Column,
