@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"bytes"
+	"os"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +18,19 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-func ExecuteInTest(args []string) (stdout string, stderr string, err error) {
+func ExecuteInTest(args []string, cwd string) (stdout string, stderr string, err error) {
+	// Set the current working directory and restore on exit.
+	oldWd, err := os.Getwd()
+	if err != nil {
+		return "", "", errors.Wrapf(err, "os.Getwd")
+	}
+	defer os.Chdir(oldWd)
+
+	err = os.Chdir(cwd)
+	if err != nil {
+		return "", "", errors.Wrapf(err, "os.Chdir")
+	}
+
 	// Configure the cmd to capture stdout and stderr and use test-provided args.
 	var stdoutBuf, stderrBuf bytes.Buffer
 	rootCmd.SetArgs(args)
