@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -40,11 +39,11 @@ var inspectCmd = &cobra.Command{
 		}
 
 		if result == nil {
-			fmt.Fprintf(os.Stderr, "No results found for %s", loc)
+			fmt.Fprintf(cmd.ErrOrStderr(), "No results found for %s", loc)
 			return nil
 		}
 
-		err = tmpl.Execute(os.Stdout, result)
+		err = tmpl.Execute(cmd.OutOrStdout(), result)
 		if err != nil {
 			return errors.Wrapf(err, "template.Execute")
 		}
