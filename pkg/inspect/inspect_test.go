@@ -186,7 +186,7 @@ func TestInspectInterfaceEmbeddedMethodCall(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Equal(t, result.Name, "String")
 	assert.Equal(t, result.Type, "func() string")
-	assert.Contains(t, result.Def.Path, "go/src/fmt")
+	assert.Contains(t, result.Def.Path, "src/fmt")
 }
 
 func TestInspectFuncCallSameFile(t *testing.T) {
@@ -273,7 +273,7 @@ func TestInspectFuncCallStdlib(t *testing.T) {
 	assert.Equal(t, "func(format string, a ...any) (n int, err error)", result.Type)
 	assert.Equal(t, result.Def.Pkg, "fmt")
 	assert.Equal(t, result.Def.Name, "Printf")
-	assert.Contains(t, result.Def.Path, "go/src/fmt")
+	assert.Contains(t, result.Def.Path, "src/fmt")
 }
 
 func TestInspectPkgNameInSelection(t *testing.T) {
@@ -312,7 +312,7 @@ func TestInspectFileWithComments(t *testing.T) {
 	assert.Equal(t, "func(a ...any) (n int, err error)", result.Type)
 	assert.Equal(t, result.Def.Pkg, "fmt")
 	assert.Equal(t, result.Def.Name, "Println")
-	assert.Contains(t, result.Def.Path, "go/src/fmt")
+	assert.Contains(t, result.Def.Path, "src/fmt")
 }
 
 func TestInspectIntegerLiteral(t *testing.T) {
