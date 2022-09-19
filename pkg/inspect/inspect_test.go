@@ -385,6 +385,30 @@ func TestInspectEmbeddedStruct(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+func TestInspectFileWithCGo(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule008/cgo.go",
+		Line:   6,
+		Column: 6,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	expected := &Result{
+		Name: "MyStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule008.MyStruct",
+		Def: Definition{
+			Pkg:  "testmodule008",
+			Name: "MyStruct",
+			Loc: file.Loc{
+				Path:   absPath(t, "testdata/testmodule008/cgo.go"),
+				Line:   6,
+				Column: 6,
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
 func BenchmarkInspect(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := Inspect(file.Loc{

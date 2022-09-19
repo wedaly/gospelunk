@@ -120,9 +120,10 @@ func astFileForPath(pkg *packages.Package, path string) (*ast.File, error) {
 		return nil, errors.Wrapf(err, "filepath.Abs")
 	}
 
-	for i, path := range pkg.GoFiles {
+	for _, f := range pkg.Syntax {
+		path := pkg.Fset.Position(f.Pos()).Filename
 		if path == targetPath {
-			return pkg.Syntax[i], nil
+			return f, nil
 		}
 	}
 
