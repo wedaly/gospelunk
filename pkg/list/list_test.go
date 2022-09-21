@@ -97,16 +97,53 @@ func TestList(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			oldWd, err := os.Getwd()
-			require.NoError(t, err)
-			defer os.Chdir(oldWd)
-
-			err = os.Chdir(tc.dir)
-			require.NoError(t, err)
-
-			result, err := List(tc.patterns, tc.opts)
-			require.NoError(t, err)
-			assert.Equal(t, tc.expected, result)
+			withWorkingDir(t, tc.dir, func(t *testing.T) {
+				result, err := List(tc.patterns, tc.opts)
+				require.NoError(t, err)
+				assert.Equal(t, tc.expected, result)
+			})
 		})
 	}
+}
+
+func TestListWithCGo(t *testing.T) {
+	cgoRelPath := filepath.Join("testdata", "testmodule002", "cgo.go")
+	cgoPath, err := filepath.Abs(cgoRelPath)
+	require.NoError(t, err)
+
+	withWorkingDir(t, "testdata/testmodule002", func(t *testing.T) {
+		result, err := List([]string{"."}, Options{})
+		require.NoError(t, err)
+
+		expected := Result{
+			Defs: []Definition{
+				{
+					Loc:  file.Loc{Path: cgoPath, Line: 6, Column: 6},
+					Name: "MyStruct",
+					Pkg: Package{
+						Name: "testmodule002",
+						ID:   "github.com/wedaly/gospelunk/pkg/list/testdata/testmodule002",
+					},
+				},
+				{
+					Loc:  file.Loc{Path: cgoPath, Line: 8, Column: 1},
+					Name: "Random",
+					Pkg: Package{
+						Name: "testmodule002",
+						ID:   "github.com/wedaly/gospelunk/pkg/list/testdata/testmodule002",
+					},
+				},
+			},
+		}
+		assert.Equal(t, expected, result)
+	})
+}
+
+func withWorkingDir(t *testing.T, dir string, f func(t *testing.T)) {
+	oldWd, err := os.Getwd()
+	require.NoError(t, err)
+	defer os.Chdir(oldWd)
+	err = os.Chdir(dir)
+	require.NoError(t, err)
+	f(t)
 }

@@ -41,7 +41,19 @@ func List(patterns []string, opts Options) (Result, error) {
 
 	seenFiles := make(map[string]struct{})
 	for _, pkg := range pkgs {
-		for fileIdx, path := range pkg.GoFiles {
+		goPaths := make(map[string]struct{}, len(pkg.GoFiles))
+		for _, p := range pkg.GoFiles {
+			goPaths[p] = struct{}{}
+		}
+
+		for _, astFile := range pkg.Syntax {
+			path := pkg.Fset.Position(astFile.Pos()).Filename
+
+			if _, ok := goPaths[path]; !ok {
+				// Likely a compiled file from cgo. Ignore it.
+				continue
+			}
+
 			if _, ok := seenFiles[path]; ok {
 				// When opts.IncludeTests is true, the pkgs list will contain both the original pkg
 				// as well as the pkg compiled for tests. Deduplicate the file paths to avoid duplicating
@@ -51,7 +63,6 @@ func List(patterns []string, opts Options) (Result, error) {
 				seenFiles[path] = struct{}{}
 			}
 
-			astFile := pkg.Syntax[fileIdx]
 			ast.Inspect(astFile, func(node ast.Node) bool {
 				switch x := node.(type) {
 				case *ast.ValueSpec:
