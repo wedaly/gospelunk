@@ -12,8 +12,10 @@ import (
 )
 
 type Options struct {
-	IncludePrivate bool
-	IncludeTests   bool
+	IncludeStructFields     bool
+	IncludeInterfaceMethods bool
+	IncludePrivate          bool
+	IncludeTests            bool
 }
 
 type Result struct {
@@ -166,6 +168,10 @@ func loadDefsFromTypeSpec(pkg *packages.Package, opts Options, typeSpec *ast.Typ
 }
 
 func loadDefsFromStructType(pkg *packages.Package, opts Options, typeName string, structType *ast.StructType, defs *[]Definition) {
+	if !opts.IncludeStructFields {
+		return
+	}
+
 	for _, field := range structType.Fields.List {
 		position := pkg.Fset.Position(field.Pos())
 		for _, nameIdent := range field.Names {
@@ -189,6 +195,10 @@ func loadDefsFromStructType(pkg *packages.Package, opts Options, typeName string
 }
 
 func loadDefsFromInterfaceType(pkg *packages.Package, opts Options, typeName string, interfaceType *ast.InterfaceType, defs *[]Definition) {
+	if !opts.IncludeInterfaceMethods {
+		return
+	}
+
 	for _, method := range interfaceType.Methods.List {
 		position := pkg.Fset.Position(method.Pos())
 		for _, nameIdent := range method.Names {

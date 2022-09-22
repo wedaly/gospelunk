@@ -29,9 +29,7 @@ func TestCmd(t *testing.T) {
 			expectedStdout: `MyVar defs.go:3:5
 MyConst defs.go:5:7
 MyStruct defs.go:7:6
-MyStruct.MyField defs.go:8:2
 MyInterface defs.go:17:6
-MyInterface.String defs.go:18:2
 MyFunc defs.go:21:1
 `,
 			expectedStderr: "",

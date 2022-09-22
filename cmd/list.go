@@ -9,9 +9,11 @@ import (
 )
 
 var (
-	ListTemplateArg       string
-	ListIncludePrivateArg bool
-	ListIncludeTestsArg   bool
+	ListTemplateArg                string
+	ListIncludeStructFieldsArg     bool
+	ListIncludeInterfaceMethodsArg bool
+	ListIncludePrivateArg          bool
+	ListIncludeTestsArg            bool
 )
 
 var listCmd = &cobra.Command{
@@ -26,8 +28,10 @@ var listCmd = &cobra.Command{
 
 		patterns := args // Passed to Go build system to locate packages.
 		opts := list.Options{
-			IncludePrivate: ListIncludePrivateArg,
-			IncludeTests:   ListIncludeTestsArg,
+			IncludeStructFields:     ListIncludeStructFieldsArg,
+			IncludeInterfaceMethods: ListIncludeInterfaceMethodsArg,
+			IncludePrivate:          ListIncludePrivateArg,
+			IncludeTests:            ListIncludeTestsArg,
 		}
 		result, err := list.List(patterns, opts)
 		if err != nil {
@@ -45,6 +49,8 @@ var listCmd = &cobra.Command{
 
 func init() {
 	listCmd.Flags().StringVarP(&ListTemplateArg, "template", "t", "{{ range .Defs }}{{.Name}} {{.Path|RelPath}}:{{.Line}}:{{.Column}}\n{{end}}", "Go template for formatting result output")
+	listCmd.Flags().BoolVar(&ListIncludeStructFieldsArg, "include-struct-fields", false, "Include struct fields")
+	listCmd.Flags().BoolVar(&ListIncludeInterfaceMethodsArg, "include-interface-methods", false, "Include interface methods")
 	listCmd.Flags().BoolVarP(&ListIncludePrivateArg, "include-private", "p", false, "Include private definitions")
 	listCmd.Flags().BoolVar(&ListIncludeTestsArg, "include-tests", false, "Include definitions from tests")
 	rootCmd.AddCommand(listCmd)
