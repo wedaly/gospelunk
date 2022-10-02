@@ -183,6 +183,21 @@ func TestListWithImports(t *testing.T) {
 	})
 }
 
+func TestListFileOutsideGoModule(t *testing.T) {
+	withWorkingDir(t, "testdata", func(t *testing.T) {
+		result, err := List([]string{"file=testmodule004/first.go"}, Options{})
+		require.NoError(t, err)
+
+		// Expect definitions from both files in the package.
+		var defNames []string
+		for _, def := range result.Defs {
+			defNames = append(defNames, def.Name)
+		}
+		expected := []string{"FirstFunc", "SecondFunc"}
+		assert.Equal(t, expected, defNames)
+	})
+}
+
 func withWorkingDir(t *testing.T, dir string, f func(t *testing.T)) {
 	oldWd, err := os.Getwd()
 	require.NoError(t, err)

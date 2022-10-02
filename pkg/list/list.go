@@ -3,7 +3,9 @@ package list
 import (
 	"fmt"
 	"go/ast"
+	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
@@ -111,6 +113,18 @@ func loadGoPackages(patterns []string, opts Options) ([]*packages.Package, error
 
 	if opts.IncludeImports {
 		cfg.Mode |= (packages.NeedImports | packages.NeedDeps)
+	}
+
+	// Workaround for a quirk of the Go build system.
+	// When specifying a package using "file=" syntax, the result differs depending
+	// on whether the current working directory is inside the Go module.
+	// If inside the module, the package includes syntax trees for all files in the package.
+	// If outside the module, the package includes only syntax trees for the specific file.
+	// We want the same behavior in either case, so set the directory to the one containing
+	// the requested file to guarantee that the current working directory is in the module.
+	if len(patterns) == 1 && strings.HasPrefix(patterns[0], "file=") {
+		_, path, _ := strings.Cut(patterns[0], "=")
+		cfg.Dir = filepath.Dir(path)
 	}
 
 	pkgs, err := packages.Load(cfg, patterns...)
