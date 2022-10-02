@@ -14,6 +14,7 @@ var (
 	ListIncludeInterfaceMethodsArg bool
 	ListIncludePrivateArg          bool
 	ListIncludeTestsArg            bool
+	ListIncludeImportsArg          bool
 )
 
 var listCmd = &cobra.Command{
@@ -32,6 +33,7 @@ var listCmd = &cobra.Command{
 			IncludeInterfaceMethods: ListIncludeInterfaceMethodsArg,
 			IncludePrivate:          ListIncludePrivateArg,
 			IncludeTests:            ListIncludeTestsArg,
+			IncludeImports:          ListIncludeImportsArg,
 		}
 		result, err := list.List(patterns, opts)
 		if err != nil {
@@ -53,5 +55,6 @@ func init() {
 	listCmd.Flags().BoolVar(&ListIncludeInterfaceMethodsArg, "include-interface-methods", false, "Include interface methods")
 	listCmd.Flags().BoolVarP(&ListIncludePrivateArg, "include-private", "p", false, "Include private definitions")
 	listCmd.Flags().BoolVar(&ListIncludeTestsArg, "include-tests", false, "Include definitions from tests")
+	listCmd.Flags().BoolVar(&ListIncludeImportsArg, "include-imports", false, "Include definitions from imported packages")
 	rootCmd.AddCommand(listCmd)
 }

@@ -16,6 +16,7 @@ type Options struct {
 	IncludeInterfaceMethods bool
 	IncludePrivate          bool
 	IncludeTests            bool
+	IncludeImports          bool
 }
 
 type Result struct {
@@ -108,12 +109,43 @@ func loadGoPackages(patterns []string, opts Options) ([]*packages.Package, error
 		Tests: opts.IncludeTests,
 	}
 
+	if opts.IncludeImports {
+		cfg.Mode |= (packages.NeedImports | packages.NeedDeps)
+	}
+
 	pkgs, err := packages.Load(cfg, patterns...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "packages.Load")
 	}
 
+	if opts.IncludeImports {
+		pkgs = pkgsAndDirectImports(pkgs)
+	}
+
 	return pkgs, nil
+}
+
+func pkgsAndDirectImports(pkgs []*packages.Package) []*packages.Package {
+	uniquePkgs := make(map[string]*packages.Package, len(pkgs))
+	for _, pkg := range pkgs {
+		uniquePkgs[pkg.ID] = pkg
+		for _, importedPkg := range pkg.Imports {
+			if _, ok := uniquePkgs[importedPkg.ID]; !ok {
+				uniquePkgs[importedPkg.ID] = importedPkg
+			}
+		}
+	}
+
+	result := make([]*packages.Package, 0, len(uniquePkgs))
+	for _, pkg := range uniquePkgs {
+		result = append(result, pkg)
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].ID < result[j].ID
+	})
+
+	return result
 }
 
 func loadDefsFromValueSpec(pkg *packages.Package, opts Options, valueSpec *ast.ValueSpec, defs *[]Definition) {
