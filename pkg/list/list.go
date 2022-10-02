@@ -18,7 +18,7 @@ type Options struct {
 	IncludeInterfaceMethods bool
 	IncludePrivate          bool
 	IncludeTests            bool
-	IncludeImports          bool
+	OnlyImports             bool
 }
 
 type Result struct {
@@ -111,7 +111,7 @@ func loadGoPackages(patterns []string, opts Options) ([]*packages.Package, error
 		Tests: opts.IncludeTests,
 	}
 
-	if opts.IncludeImports {
+	if opts.OnlyImports {
 		cfg.Mode |= (packages.NeedImports | packages.NeedDeps)
 	}
 
@@ -132,26 +132,25 @@ func loadGoPackages(patterns []string, opts Options) ([]*packages.Package, error
 		return nil, errors.Wrapf(err, "packages.Load")
 	}
 
-	if opts.IncludeImports {
-		pkgs = pkgsAndDirectImports(pkgs)
+	if opts.OnlyImports {
+		pkgs = uniqueImports(pkgs)
 	}
 
 	return pkgs, nil
 }
 
-func pkgsAndDirectImports(pkgs []*packages.Package) []*packages.Package {
-	uniquePkgs := make(map[string]*packages.Package, len(pkgs))
+func uniqueImports(pkgs []*packages.Package) []*packages.Package {
+	uniqueImports := make(map[string]*packages.Package, len(pkgs))
 	for _, pkg := range pkgs {
-		uniquePkgs[pkg.ID] = pkg
 		for _, importedPkg := range pkg.Imports {
-			if _, ok := uniquePkgs[importedPkg.ID]; !ok {
-				uniquePkgs[importedPkg.ID] = importedPkg
+			if _, ok := uniqueImports[importedPkg.ID]; !ok {
+				uniqueImports[importedPkg.ID] = importedPkg
 			}
 		}
 	}
 
-	result := make([]*packages.Package, 0, len(uniquePkgs))
-	for _, pkg := range uniquePkgs {
+	result := make([]*packages.Package, 0, len(uniqueImports))
+	for _, pkg := range uniqueImports {
 		result = append(result, pkg)
 	}
 

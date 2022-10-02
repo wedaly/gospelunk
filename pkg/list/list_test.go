@@ -168,7 +168,7 @@ func TestListWithCGo(t *testing.T) {
 
 func TestListWithImports(t *testing.T) {
 	withWorkingDir(t, "testdata/testmodule003", func(t *testing.T) {
-		result, err := List([]string{"."}, Options{IncludeImports: true})
+		result, err := List([]string{"."}, Options{OnlyImports: true})
 		require.NoError(t, err)
 
 		// Exact definitions may vary based on Go stdlib, so check that imported packages are included.
@@ -176,8 +176,7 @@ func TestListWithImports(t *testing.T) {
 		for _, def := range result.Defs {
 			defPkgs[def.Pkg.ID] = append(defPkgs[def.Pkg.ID], def.Name)
 		}
-		assert.Equal(t, 3, len(defPkgs))
-		assert.Equal(t, []string{"MyFunc"}, defPkgs["github.com/wedaly/gospelunk/pkg/list/testdata/testmodule003"])
+		assert.Equal(t, 2, len(defPkgs))
 		assert.Equal(t, []string{"SubFunc"}, defPkgs["github.com/wedaly/gospelunk/pkg/list/testdata/testmodule003/subpkg"])
 		assert.Greater(t, len(defPkgs["fmt"]), 1)
 	})
