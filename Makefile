@@ -1,4 +1,4 @@
-.PHONY: all fmt build test install vet bench clean
+.PHONY: all fmt build test install install-devtools vet bench clean
 
 all: fmt build vet test
 
@@ -14,6 +14,9 @@ test:
 
 install:
 	go install
+
+install-devtools:
+	go install golang.org/x/tools/cmd/goimports@latest
 
 vet:
 	go vet ./...
