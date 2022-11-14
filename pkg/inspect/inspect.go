@@ -14,16 +14,10 @@ import (
 	"github.com/wedaly/gospelunk/pkg/file"
 )
 
-type Definition struct {
-	file.Loc
-	Pkg  string
-	Name string
-}
-
 type Result struct {
-	Name string
-	Type string
-	Def  Definition
+	Name      string
+	Type      string
+	Relations []Relation
 }
 
 func Inspect(loc file.Loc) (*Result, error) {
@@ -178,13 +172,16 @@ func resultForAstIdent(pkg *packages.Package, ident *ast.Ident) *Result {
 	return &Result{
 		Name: ident.Name,
 		Type: typeName,
-		Def: Definition{
-			Pkg:  pkgName,
-			Name: obj.Name(),
-			Loc: file.Loc{
-				Path:   position.Filename,
-				Line:   position.Line,
-				Column: position.Column,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  pkgName,
+				Name: obj.Name(),
+				Loc: file.Loc{
+					Path:   position.Filename,
+					Line:   position.Line,
+					Column: position.Column,
+				},
 			},
 		},
 	}

@@ -21,13 +21,16 @@ func TestInspectLocalVariableDefinedInSameFunction(t *testing.T) {
 	expected := &Result{
 		Name: "localVar",
 		Type: "int",
-		Def: Definition{
-			Pkg:  "main",
-			Name: "localVar",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule001/localvar.go"),
-				Line:   6,
-				Column: 2,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "main",
+				Name: "localVar",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule001/localvar.go"),
+					Line:   6,
+					Column: 2,
+				},
 			},
 		},
 	}
@@ -45,13 +48,16 @@ func TestInspectStructTypeLiteral(t *testing.T) {
 	expected := &Result{
 		Name: "TestStruct",
 		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule002.TestStruct",
-		Def: Definition{
-			Pkg:  "main",
-			Name: "TestStruct",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule002/struct.go"),
-				Line:   5,
-				Column: 6,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "main",
+				Name: "TestStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule002/struct.go"),
+					Line:   5,
+					Column: 6,
+				},
 			},
 		},
 	}
@@ -69,13 +75,16 @@ func TestInspectStructLiteralField(t *testing.T) {
 	expected := &Result{
 		Name: "StringField",
 		Type: "string",
-		Def: Definition{
-			Pkg:  "main",
-			Name: "StringField",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule002/struct.go"),
-				Line:   6,
-				Column: 2,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "main",
+				Name: "StringField",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule002/struct.go"),
+					Line:   6,
+					Column: 2,
+				},
 			},
 		},
 	}
@@ -93,13 +102,16 @@ func TestInspectStructSelectionField(t *testing.T) {
 	expected := &Result{
 		Name: "IntField",
 		Type: "int",
-		Def: Definition{
-			Pkg:  "main",
-			Name: "IntField",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule002/struct.go"),
-				Line:   7,
-				Column: 2,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "main",
+				Name: "IntField",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule002/struct.go"),
+					Line:   7,
+					Column: 2,
+				},
 			},
 		},
 	}
@@ -117,13 +129,16 @@ func TestInspectStructMethodCall(t *testing.T) {
 	expected := &Result{
 		Name: "String",
 		Type: "func() string",
-		Def: Definition{
-			Pkg:  "main",
-			Name: "String",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule004/methods.go"),
-				Line:   12,
-				Column: 22,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "main",
+				Name: "String",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule004/methods.go"),
+					Line:   12,
+					Column: 22,
+				},
 			},
 		},
 	}
@@ -141,13 +156,16 @@ func TestInspectStructMethodCallOnReturnedValue(t *testing.T) {
 	expected := &Result{
 		Name: "String",
 		Type: "func() string",
-		Def: Definition{
-			Pkg:  "main",
-			Name: "String",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule004/methods.go"),
-				Line:   22,
-				Column: 26,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "main",
+				Name: "String",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule004/methods.go"),
+					Line:   22,
+					Column: 26,
+				},
 			},
 		},
 	}
@@ -165,13 +183,16 @@ func TestInspectInterfaceMethodCall(t *testing.T) {
 	expected := &Result{
 		Name: "MyString",
 		Type: "func() string",
-		Def: Definition{
-			Pkg:  "main",
-			Name: "MyString",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule004/methods.go"),
-				Line:   7,
-				Column: 2,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "main",
+				Name: "MyString",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule004/methods.go"),
+					Line:   7,
+					Column: 2,
+				},
 			},
 		},
 	}
@@ -186,9 +207,11 @@ func TestInspectInterfaceEmbeddedMethodCall(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	assert.Equal(t, result.Name, "String")
-	assert.Equal(t, result.Type, "func() string")
-	assert.Contains(t, result.Def.Path, "src/fmt")
+	assert.Equal(t, "String", result.Name)
+	assert.Equal(t, "func() string", result.Type)
+	require.Equal(t, 1, len(result.Relations))
+	assert.Equal(t, RelationKindDef, result.Relations[0].Kind)
+	assert.Contains(t, result.Relations[0].Path, "src/fmt")
 }
 
 func TestInspectFuncCallSameFile(t *testing.T) {
@@ -202,13 +225,16 @@ func TestInspectFuncCallSameFile(t *testing.T) {
 	expected := &Result{
 		Name: "FuncInSameFile",
 		Type: "func() int",
-		Def: Definition{
-			Pkg:  "testmodule003",
-			Name: "FuncInSameFile",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule003/func.go"),
-				Line:   9,
-				Column: 6,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "testmodule003",
+				Name: "FuncInSameFile",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule003/func.go"),
+					Line:   9,
+					Column: 6,
+				},
 			},
 		},
 	}
@@ -226,13 +252,16 @@ func TestInspectFuncCallOtherFile(t *testing.T) {
 	expected := &Result{
 		Name: "FuncInOtherFile",
 		Type: "func() int",
-		Def: Definition{
-			Pkg:  "testmodule003",
-			Name: "FuncInOtherFile",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule003/other.go"),
-				Line:   3,
-				Column: 6,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "testmodule003",
+				Name: "FuncInOtherFile",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule003/other.go"),
+					Line:   3,
+					Column: 6,
+				},
 			},
 		},
 	}
@@ -250,13 +279,16 @@ func TestInspectFuncCallOtherPkg(t *testing.T) {
 	expected := &Result{
 		Name: "FuncInOtherPkg",
 		Type: "func(x int) int",
-		Def: Definition{
-			Pkg:  "subpkg",
-			Name: "FuncInOtherPkg",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule003/subpkg/subpkgfunc.go"),
-				Line:   3,
-				Column: 6,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "subpkg",
+				Name: "FuncInOtherPkg",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule003/subpkg/subpkgfunc.go"),
+					Line:   3,
+					Column: 6,
+				},
 			},
 		},
 	}
@@ -273,9 +305,11 @@ func TestInspectFuncCallStdlib(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Equal(t, "Printf", result.Name)
 	assert.Equal(t, "func(format string, a ...any) (n int, err error)", result.Type)
-	assert.Equal(t, result.Def.Pkg, "fmt")
-	assert.Equal(t, result.Def.Name, "Printf")
-	assert.Contains(t, result.Def.Path, "src/fmt")
+	require.Equal(t, 1, len(result.Relations))
+	assert.Equal(t, RelationKindDef, result.Relations[0].Kind)
+	assert.Equal(t, "fmt", result.Relations[0].Pkg)
+	assert.Equal(t, "Printf", result.Relations[0].Name)
+	assert.Contains(t, result.Relations[0].Path, "src/fmt")
 }
 
 func TestInspectPkgNameInSelection(t *testing.T) {
@@ -289,13 +323,16 @@ func TestInspectPkgNameInSelection(t *testing.T) {
 	expected := &Result{
 		Name: "fmt",
 		Type: "",
-		Def: Definition{
-			Pkg:  "testmodule003",
-			Name: "fmt",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule003/func.go"),
-				Line:   4,
-				Column: 2,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "testmodule003",
+				Name: "fmt",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule003/func.go"),
+					Line:   4,
+					Column: 2,
+				},
 			},
 		},
 	}
@@ -312,9 +349,11 @@ func TestInspectFileWithComments(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Equal(t, "Println", result.Name)
 	assert.Equal(t, "func(a ...any) (n int, err error)", result.Type)
-	assert.Equal(t, result.Def.Pkg, "fmt")
-	assert.Equal(t, result.Def.Name, "Println")
-	assert.Contains(t, result.Def.Path, "src/fmt")
+	require.Equal(t, 1, len(result.Relations))
+	assert.Equal(t, RelationKindDef, result.Relations[0].Kind)
+	assert.Equal(t, "fmt", result.Relations[0].Pkg)
+	assert.Equal(t, "Println", result.Relations[0].Name)
+	assert.Contains(t, result.Relations[0].Path, "src/fmt")
 }
 
 func TestInspectIntegerLiteral(t *testing.T) {
@@ -338,13 +377,16 @@ func TestInspectIntegerConst(t *testing.T) {
 	expected := &Result{
 		Name: "intConst",
 		Type: "untyped int",
-		Def: Definition{
-			Pkg:  "main",
-			Name: "intConst",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule006/const.go"),
-				Line:   5,
-				Column: 7,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "main",
+				Name: "intConst",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule006/const.go"),
+					Line:   5,
+					Column: 7,
+				},
 			},
 		},
 	}
@@ -372,13 +414,16 @@ func TestInspectEmbeddedStruct(t *testing.T) {
 	expected := &Result{
 		Name: "EmbeddedStruct",
 		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule007/subpkg.EmbeddedStruct",
-		Def: Definition{
-			Pkg:  "subpkg",
-			Name: "EmbeddedStruct",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule007/subpkg/struct.go"),
-				Line:   3,
-				Column: 6,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "subpkg",
+				Name: "EmbeddedStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule007/subpkg/struct.go"),
+					Line:   3,
+					Column: 6,
+				},
 			},
 		},
 	}
@@ -396,13 +441,16 @@ func TestInspectFileWithCGo(t *testing.T) {
 	expected := &Result{
 		Name: "MyStruct",
 		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule008.MyStruct",
-		Def: Definition{
-			Pkg:  "testmodule008",
-			Name: "MyStruct",
-			Loc: file.Loc{
-				Path:   absPath(t, "testdata/testmodule008/cgo.go"),
-				Line:   6,
-				Column: 6,
+		Relations: []Relation{
+			{
+				Kind: RelationKindDef,
+				Pkg:  "testmodule008",
+				Name: "MyStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule008/cgo.go"),
+					Line:   6,
+					Column: 6,
+				},
 			},
 		},
 	}

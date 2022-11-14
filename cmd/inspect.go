@@ -62,7 +62,8 @@ func init() {
 	inspectCmd.Flags().IntVarP(&InspectColumnArg, "column", "c", 1, "Column number in Go source file")
 	inspectCmd.MarkFlagRequired("column")
 
-	inspectCmd.Flags().StringVarP(&InspectTemplateArg, "template", "t", "{{.Def.Name}} {{.Def.Path|RelPath}}:{{.Def.Line}}:{{.Def.Column}}\n", "Go template for formatting result output")
+	defaultTpl := "{{range .Relations}}{{.Name}} {{.Path|RelPath}}:{{.Line}}:{{.Column}}{{end}}\n"
+	inspectCmd.Flags().StringVarP(&InspectTemplateArg, "template", "t", defaultTpl, "Go template for formatting result output")
 
 	rootCmd.AddCommand(inspectCmd)
 }
