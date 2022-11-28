@@ -362,8 +362,8 @@ func TestInspectIntegerLiteral(t *testing.T) {
 		Line:   5,
 		Column: 18,
 	})
-	require.NoError(t, err)
-	require.Nil(t, result)
+	assert.EqualError(t, err, "Could not find AST node of type *ast.Ident at location testdata/testmodule006/const.go:5:18")
+	assert.Nil(t, result)
 }
 
 func TestInspectIntegerConst(t *testing.T) {

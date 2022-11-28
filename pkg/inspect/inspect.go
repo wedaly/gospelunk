@@ -26,14 +26,9 @@ func Inspect(loc file.Loc) (*Result, error) {
 		return nil, err
 	}
 
-	astFile, err := astFileForPath(pkg, loc.Path)
+	astIdent, err := astNodeAtLoc[*ast.Ident](pkg, loc)
 	if err != nil {
 		return nil, err
-	}
-
-	astIdent := astIdentForLineAndCol(astFile, pkg.Fset, loc.Line, loc.Column)
-	if astIdent == nil {
-		return nil, nil
 	}
 
 	result := resultForAstIdent(pkg, astIdent)
@@ -108,6 +103,45 @@ func selectivelyParseFileFunc(line int) ParseFileFunc {
 	}
 }
 
+// astNodeAtLoc locates the ast.Node of a particular type at a line and column in a file.
+// If there are multiple such nodes, it returns the first one in depth-first traversal order.
+// If there are no such nodes, it returns an error.
+func astNodeAtLoc[T ast.Node](pkg *packages.Package, loc file.Loc) (T, error) {
+	var (
+		found     bool
+		foundNode T
+	)
+
+	fset := pkg.Fset
+	astFile, err := astFileForPath(pkg, loc.Path)
+	if err != nil {
+		return foundNode, err
+	}
+
+	ast.Inspect(astFile, func(node ast.Node) bool {
+		if node == nil || found {
+			return false
+		}
+		start := fset.Position(node.Pos())
+		end := fset.Position(node.End())
+		if loc.Line < start.Line || loc.Line > end.Line || (loc.Line == start.Line && loc.Column < start.Column) || (loc.Line == end.Line && loc.Column > end.Column) {
+			return false
+		}
+		if node, ok := node.(T); ok {
+			found = true
+			foundNode = node
+			return false
+		}
+		return true
+	})
+
+	if !found {
+		return foundNode, fmt.Errorf("Could not find AST node of type %T at location %s", foundNode, loc)
+	}
+
+	return foundNode, nil
+}
+
 func astFileForPath(pkg *packages.Package, path string) (*ast.File, error) {
 	targetPath, err := filepath.Abs(path)
 	if err != nil {
@@ -122,26 +156,6 @@ func astFileForPath(pkg *packages.Package, path string) (*ast.File, error) {
 	}
 
 	return nil, fmt.Errorf("Could not find ast.File for %q", targetPath)
-}
-
-func astIdentForLineAndCol(astFile *ast.File, fset *token.FileSet, line int, col int) *ast.Ident {
-	var foundIdent *ast.Ident
-	ast.Inspect(astFile, func(node ast.Node) bool {
-		if node == nil {
-			return false
-		}
-		start := fset.Position(node.Pos())
-		end := fset.Position(node.End())
-		if line < start.Line || line > end.Line || (line == start.Line && col < start.Column) || (line == end.Line && col > end.Column) {
-			return false
-		}
-		if ident, ok := node.(*ast.Ident); ok {
-			foundIdent = ident
-			return false
-		}
-		return true
-	})
-	return foundIdent
 }
 
 func resultForAstIdent(pkg *packages.Package, ident *ast.Ident) *Result {
