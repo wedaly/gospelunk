@@ -132,13 +132,10 @@ func astIdentForLineAndCol(astFile *ast.File, fset *token.FileSet, line int, col
 		}
 		start := fset.Position(node.Pos())
 		end := fset.Position(node.End())
-		if line < start.Line || end.Line < line {
+		if line < start.Line || line > end.Line || (line == start.Line && col < start.Column) || (line == end.Line && col > end.Column) {
 			return false
 		}
 		if ident, ok := node.(*ast.Ident); ok {
-			if col < start.Column || end.Column < col {
-				return false
-			}
 			foundIdent = ident
 			return false
 		}
