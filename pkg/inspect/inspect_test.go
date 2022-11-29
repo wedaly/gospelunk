@@ -400,7 +400,11 @@ func TestInspectNil(t *testing.T) {
 		Column: 10,
 	})
 	require.NoError(t, err)
-	require.Nil(t, result)
+	expected := &Result{
+		Name: "nil",
+		Type: "untyped nil",
+	}
+	assert.Equal(t, expected, result)
 }
 
 func TestInspectEmbeddedStruct(t *testing.T) {
