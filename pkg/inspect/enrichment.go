@@ -10,7 +10,7 @@ import (
 	"github.com/wedaly/gospelunk/pkg/file"
 )
 
-type EnrichResultFunc func(result *Result, pkg *packages.Package, loc file.Loc) error
+type enrichResultFunc func(result *Result, pkg *packages.Package, loc file.Loc) error
 
 func enrichResultNameAndType(result *Result, pkg *packages.Package, loc file.Loc) error {
 	ident, err := astNodeAtLoc[*ast.Ident](pkg, loc)

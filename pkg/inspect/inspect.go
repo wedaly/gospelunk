@@ -16,7 +16,7 @@ func Inspect(loc file.Loc) (*Result, error) {
 		return nil, err
 	}
 
-	enrichments := []EnrichResultFunc{
+	enrichments := []enrichResultFunc{
 		enrichResultNameAndType,
 		enrichResultDefRelation,
 	}
