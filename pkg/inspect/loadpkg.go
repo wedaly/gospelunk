@@ -117,7 +117,7 @@ func findPossibleGoModDirsInSearchDir(searchDir string) ([]string, error) {
 	candidateSet := make(map[string]struct{}, 1)
 
 	// Always include the search directory, even if it isn't in a Go module.
-	candidateSet[searchDir] = struct{}{}
+	candidateSet[filepath.Clean(searchDir)] = struct{}{}
 
 	// Find subdirectories containing a "go.mod" file.
 	err := filepath.WalkDir(searchDir, func(path string, d fs.DirEntry, err error) error {
@@ -126,7 +126,7 @@ func findPossibleGoModDirsInSearchDir(searchDir string) ([]string, error) {
 		}
 
 		if !d.IsDir() && d.Name() == "go.mod" {
-			candidateSet[filepath.Dir(path)] = struct{}{}
+			candidateSet[filepath.Clean(filepath.Dir(path))] = struct{}{}
 		}
 
 		return nil
