@@ -7,10 +7,13 @@ import (
 	"io/fs"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/tools/go/packages"
 
 	"github.com/wedaly/gospelunk/pkg/file"
@@ -70,28 +73,41 @@ func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string) (
 
 	// Parse and typecheck packages that either equal or import the target package.
 	var resultPkgs []*packages.Package
+	var mu sync.Mutex
+	g := new(errgroup.Group)
+	g.SetLimit(runtime.NumCPU())
 	for _, candidatePkg := range candidatePkgs {
 		if !(candidatePkg.ImportPath == targetPkgId || candidatePkg.ImportsPkg(targetPkgId)) {
 			continue
 		}
 
-		cfg := &packages.Config{
-			Mode: (packages.NeedFiles |
-				packages.NeedSyntax |
-				packages.NeedDeps |
-				packages.NeedTypes |
-				packages.NeedTypesInfo |
-				packages.NeedImports),
-			Dir:       candidatePkg.Dir,
-			ParseFile: selectivelyParseFileFunc(-1),
-		}
+		pkgDir := candidatePkg.Dir // Capture for closure below.
+		g.Go(func() error {
+			cfg := &packages.Config{
+				Mode: (packages.NeedFiles |
+					packages.NeedSyntax |
+					packages.NeedDeps |
+					packages.NeedTypes |
+					packages.NeedTypesInfo |
+					packages.NeedImports),
+				Dir:       pkgDir,
+				ParseFile: selectivelyParseFileFunc(-1),
+			}
 
-		pkgs, err := packages.Load(cfg, ".")
-		if err != nil {
-			return nil, errors.Wrapf(err, "packages.Load")
-		}
+			pkgs, err := packages.Load(cfg, ".")
+			if err != nil {
+				return errors.Wrapf(err, "packages.Load")
+			}
 
-		resultPkgs = append(resultPkgs, pkgs...)
+			mu.Lock()
+			resultPkgs = append(resultPkgs, pkgs...)
+			mu.Unlock()
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
 
 	return resultPkgs, nil
