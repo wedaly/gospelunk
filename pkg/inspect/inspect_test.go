@@ -15,7 +15,7 @@ func TestInspectLocalVariableDefinedInSameFunction(t *testing.T) {
 		Path:   "testdata/testmodule001/localvar.go",
 		Line:   7,
 		Column: 32,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -42,7 +42,7 @@ func TestInspectStructTypeLiteral(t *testing.T) {
 		Path:   "testdata/testmodule002/struct.go",
 		Line:   11,
 		Column: 7,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -69,7 +69,7 @@ func TestInspectStructLiteralField(t *testing.T) {
 		Path:   "testdata/testmodule002/struct.go",
 		Line:   12,
 		Column: 3,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -96,7 +96,7 @@ func TestInspectStructSelectionField(t *testing.T) {
 		Path:   "testdata/testmodule002/struct.go",
 		Line:   16,
 		Column: 23,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -123,7 +123,7 @@ func TestInspectStructMethodCall(t *testing.T) {
 		Path:   "testdata/testmodule004/methods.go",
 		Line:   28,
 		Column: 23,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -150,7 +150,7 @@ func TestInspectStructMethodCallOnReturnedValue(t *testing.T) {
 		Path:   "testdata/testmodule004/methods.go",
 		Line:   29,
 		Column: 32,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -177,7 +177,7 @@ func TestInspectInterfaceMethodCall(t *testing.T) {
 		Path:   "testdata/testmodule004/methods.go",
 		Line:   33,
 		Column: 27,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -204,7 +204,7 @@ func TestInspectInterfaceEmbeddedMethodCall(t *testing.T) {
 		Path:   "testdata/testmodule004/methods.go",
 		Line:   34,
 		Column: 27,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "String", result.Name)
@@ -219,7 +219,7 @@ func TestInspectFuncCallSameFile(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   14,
 		Column: 9,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -246,7 +246,7 @@ func TestInspectFuncCallOtherFile(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   15,
 		Column: 9,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -273,7 +273,7 @@ func TestInspectFuncCallOtherPkg(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   16,
 		Column: 14,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -300,7 +300,7 @@ func TestInspectFuncCallStdlib(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   17,
 		Column: 6,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "Printf", result.Name)
@@ -317,7 +317,7 @@ func TestInspectPkgNameInSelection(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   17,
 		Column: 2,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -344,7 +344,7 @@ func TestInspectFileWithComments(t *testing.T) {
 		Path:   "testdata/testmodule005/comments.go",
 		Line:   12,
 		Column: 6,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "Println", result.Name)
@@ -361,7 +361,7 @@ func TestInspectIntegerLiteral(t *testing.T) {
 		Path:   "testdata/testmodule006/const.go",
 		Line:   5,
 		Column: 18,
-	})
+	}, "")
 	assert.EqualError(t, err, "Could not find AST node of type *ast.Ident at location testdata/testmodule006/const.go:5:18")
 	assert.Nil(t, result)
 }
@@ -371,7 +371,7 @@ func TestInspectIntegerConst(t *testing.T) {
 		Path:   "testdata/testmodule006/const.go",
 		Line:   13,
 		Column: 23,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -398,7 +398,7 @@ func TestInspectNil(t *testing.T) {
 		Path:   "testdata/testmodule006/const.go",
 		Line:   9,
 		Column: 10,
-	})
+	}, "")
 	require.NoError(t, err)
 	expected := &Result{
 		Name: "nil",
@@ -412,7 +412,7 @@ func TestInspectEmbeddedStruct(t *testing.T) {
 		Path:   "testdata/testmodule007/struct.go",
 		Line:   6,
 		Column: 10,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -439,7 +439,7 @@ func TestInspectFileWithCGo(t *testing.T) {
 		Path:   "testdata/testmodule008/cgo.go",
 		Line:   6,
 		Column: 6,
-	})
+	}, "")
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -461,13 +461,131 @@ func TestInspectFileWithCGo(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+func TestInspectInterfaceWithImpl(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule009/iface.go",
+		Line:   3,
+		Column: 7,
+	}, "testdata/testmodule009") // TODO: back to testdata...
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	expected := &Result{
+		Name: "MyInterface",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.MyInterface",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule009",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/iface.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "subpkg",
+				Name: "MyInterfaceSubpkgImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
+					Line:   7,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "testmodule009",
+				Name: "MyInterfaceImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "testmodule009",
+				Name: "MyInterfacePointerImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   13,
+					Column: 6,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectInterfaceWithImplMethod(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule009/iface.go",
+		Line:   5,
+		Column: 3,
+	}, "testdata/testmodule009") // TODO: back to testdata...
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	expected := &Result{
+		Name: "IfaceMethodTwo",
+		Type: "func(param github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.ParamType) int",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule009",
+				Name: "IfaceMethodTwo",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/iface.go"),
+					Line:   5,
+					Column: 2,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "subpkg",
+				Name: "IfaceMethodTwo",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
+					Line:   13,
+					Column: 32,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "testmodule009",
+				Name: "IfaceMethodTwo",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   9,
+					Column: 26,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "testmodule009",
+				Name: "IfaceMethodTwo",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   19,
+					Column: 34,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
 func BenchmarkInspect(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := Inspect(file.Loc{
 			Path:   "testdata/testmodule003/func.go",
 			Line:   15,
 			Column: 9,
-		})
+		}, "")
 		require.NoError(b, err)
 	}
 }

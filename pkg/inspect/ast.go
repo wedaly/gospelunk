@@ -3,6 +3,8 @@ package inspect
 import (
 	"fmt"
 	"go/ast"
+	"go/parser"
+	"go/token"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -64,4 +66,38 @@ func astFileForPath(pkg *packages.Package, path string) (*ast.File, error) {
 	}
 
 	return nil, fmt.Errorf("Could not find ast.File for %q", targetPath)
+}
+
+// selectivelyParseFileFunc removes function bodies that do not contain the target line.
+func selectivelyParseFileFunc(line int) func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
+	return func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
+		astFile, err := parser.ParseFile(fset, filename, src, 0)
+		if err != nil {
+			return nil, err
+		}
+
+		// Delete function bodies that don't contain the target line.
+		// This reduces the amount of code we need to typecheck later.
+		ast.Inspect(astFile, func(node ast.Node) bool {
+			if node == nil {
+				return false
+			}
+
+			funcDecl, ok := node.(*ast.FuncDecl)
+			if !ok || funcDecl.Body == nil {
+				return true
+			}
+
+			start := fset.Position(funcDecl.Body.Lbrace)
+			end := fset.Position(funcDecl.Body.Rbrace)
+			if line < start.Line || end.Line < line {
+				funcDecl.Body = nil
+				return false
+			} else {
+				return true
+			}
+		})
+
+		return astFile, nil
+	}
 }

@@ -10,7 +10,7 @@ type Result struct {
 	Relations []Relation
 }
 
-func Inspect(loc file.Loc) (*Result, error) {
+func Inspect(loc file.Loc, searchDir string) (*Result, error) {
 	pkg, err := loadGoPackageForFileLoc(loc)
 	if err != nil {
 		return nil, err
@@ -19,11 +19,12 @@ func Inspect(loc file.Loc) (*Result, error) {
 	enrichments := []enrichResultFunc{
 		enrichResultNameAndType,
 		enrichResultDefRelation,
+		enrichResultIfaceImplRelation,
 	}
 
 	var result Result
 	for _, enrichFunc := range enrichments {
-		if err := enrichFunc(&result, pkg, loc); err != nil {
+		if err := enrichFunc(&result, pkg, loc, searchDir); err != nil {
 			return nil, err
 		}
 	}

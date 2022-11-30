@@ -12,10 +12,11 @@ import (
 )
 
 var (
-	InspectFileArg     string
-	InspectLineArg     int
-	InspectColumnArg   int
-	InspectTemplateArg string
+	InspectFileArg      string
+	InspectLineArg      int
+	InspectColumnArg    int
+	InspectSearchDirArg string
+	InspectTemplateArg  string
 )
 
 var inspectCmd = &cobra.Command{
@@ -33,7 +34,7 @@ var inspectCmd = &cobra.Command{
 			Line:   InspectLineArg,
 			Column: InspectColumnArg,
 		}
-		result, err := inspect.Inspect(loc)
+		result, err := inspect.Inspect(loc, InspectSearchDirArg)
 		if err != nil {
 			return err
 		}
@@ -61,6 +62,8 @@ func init() {
 
 	inspectCmd.Flags().IntVarP(&InspectColumnArg, "column", "c", 1, "Column number in Go source file")
 	inspectCmd.MarkFlagRequired("column")
+
+	inspectCmd.Flags().StringVarP(&InspectSearchDirArg, "searchDir", "d", ".", "Path to directory to search for relations outside the current package")
 
 	defaultTpl := "{{range .Relations}}{{.Name}} {{.Path|RelPath}}:{{.Line}}:{{.Column}}{{end}}\n"
 	inspectCmd.Flags().StringVarP(&InspectTemplateArg, "template", "t", defaultTpl, "Go template for formatting result output")
