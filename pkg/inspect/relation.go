@@ -31,8 +31,13 @@ func (rs RelationSlice) Len() int {
 func (rs RelationSlice) Less(i, j int) bool {
 	if rs[i].Pkg != rs[j].Pkg {
 		return rs[i].Pkg < rs[j].Pkg
+	} else if rs[i].Name != rs[j].Name {
+		return rs[i].Name < rs[j].Name
+	} else if rs[i].Loc.Line != rs[i].Loc.Line {
+		return rs[i].Loc.Line < rs[j].Loc.Line
+	} else {
+		return rs[i].Loc.Column < rs[j].Loc.Column
 	}
-	return rs[i].Name < rs[j].Name
 }
 
 // Swap implements sort.Interface#Swap

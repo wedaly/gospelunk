@@ -74,7 +74,7 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 		return err
 	}
 
-	var relations RelationSlice
+	relationSet := make(map[Relation]struct{}, 0)
 	for _, searchPkg := range searchPkgs {
 		// Lookup the interface type either in the package or its imports.
 		// We need this to check if other types in the package implement the interface.
@@ -122,22 +122,24 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 			if types.Implements(obj.Type(), pkgIfaceType) || types.Implements(types.NewPointer(obj.Type()), pkgIfaceType) {
 				if methodName == "" {
 					// If we're not looking for a specific method, the relation points to the implementation of the interface type.
-					relations = append(relations, Relation{
+					r := Relation{
 						Kind: RelationKindIfaceImpl,
 						Pkg:  pkgNameForTypeObj(obj),
 						Name: obj.Name(),
 						Loc:  fileLocForTypeObj(searchPkg, obj),
-					})
+					}
+					relationSet[r] = struct{}{}
 				} else {
 					// If we're looking for a specific method, the relation points to the implementation of the method.
 					methodObj, _, _ := types.LookupFieldOrMethod(obj.Type(), true, searchPkg.Types, methodName)
 					if methodObj != nil {
-						relations = append(relations, Relation{
+						r := Relation{
 							Kind: RelationKindIfaceImpl,
 							Pkg:  pkgNameForTypeObj(methodObj),
 							Name: methodObj.Name(),
 							Loc:  fileLocForTypeObj(searchPkg, methodObj),
-						})
+						}
+						relationSet[r] = struct{}{}
 					}
 				}
 			}
@@ -145,6 +147,10 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 	}
 
 	// Ensure relations returned in a consistent order.
+	relations := make(RelationSlice, 0, len(relationSet))
+	for r := range relationSet {
+		relations = append(relations, r)
+	}
 	sort.Stable(relations)
 	result.Relations = append(result.Relations, relations...)
 	return nil
