@@ -1,6 +1,10 @@
 package inspect
 
-import "github.com/wedaly/gospelunk/pkg/file"
+import (
+	"fmt"
+
+	"github.com/wedaly/gospelunk/pkg/file"
+)
 
 type RelationKind string
 
@@ -11,6 +15,37 @@ const (
 	// The relation between an interface and an implementation.
 	RelationKindIfaceImpl = RelationKind("interfaceImplementation")
 )
+
+var AllRelationKinds []RelationKind
+var AllRelationKindStrings []string
+
+func init() {
+	AllRelationKinds = []RelationKind{RelationKindDef, RelationKindIfaceImpl}
+	for _, r := range AllRelationKinds {
+		AllRelationKindStrings = append(AllRelationKindStrings, string(r))
+	}
+}
+
+func RelationKindFromString(s string) (RelationKind, error) {
+	for _, r := range AllRelationKindStrings {
+		if s == r {
+			return RelationKind(s), nil
+		}
+	}
+	return RelationKind(""), fmt.Errorf("Invalid relation kind %q", s)
+}
+
+func RelationKindsFromStrings(relKindStrings []string) ([]RelationKind, error) {
+	relKinds := make([]RelationKind, 0, len(relKindStrings))
+	for _, s := range relKindStrings {
+		rk, err := RelationKindFromString(s)
+		if err != nil {
+			return nil, err
+		}
+		relKinds = append(relKinds, rk)
+	}
+	return relKinds, nil
+}
 
 // Relation represents a relationship between an identifier to some other part of the codebase.
 type Relation struct {

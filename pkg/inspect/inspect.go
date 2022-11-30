@@ -10,16 +10,17 @@ type Result struct {
 	Relations []Relation
 }
 
-func Inspect(loc file.Loc, searchDir string) (*Result, error) {
+func Inspect(loc file.Loc, searchDir string, includeRelKinds []RelationKind) (*Result, error) {
 	pkg, err := loadGoPackageForFileLoc(loc)
 	if err != nil {
 		return nil, err
 	}
 
-	enrichments := []enrichResultFunc{
-		enrichResultNameAndType,
-		enrichResultDefRelation,
-		enrichResultIfaceImplRelation,
+	enrichments := []enrichResultFunc{enrichResultNameAndType}
+	for _, relKind := range includeRelKinds {
+		if e := enrichmentForRelKind(relKind); e != nil {
+			enrichments = append(enrichments, e)
+		}
 	}
 
 	var result Result
@@ -30,4 +31,15 @@ func Inspect(loc file.Loc, searchDir string) (*Result, error) {
 	}
 
 	return &result, nil
+}
+
+func enrichmentForRelKind(relKind RelationKind) enrichResultFunc {
+	switch relKind {
+	case RelationKindDef:
+		return enrichResultDefRelation
+	case RelationKindIfaceImpl:
+		return enrichResultIfaceImplRelation
+	default:
+		return nil
+	}
 }

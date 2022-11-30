@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -12,11 +13,12 @@ import (
 )
 
 var (
-	InspectFileArg      string
-	InspectLineArg      int
-	InspectColumnArg    int
-	InspectSearchDirArg string
-	InspectTemplateArg  string
+	InspectFileArg          string
+	InspectLineArg          int
+	InspectColumnArg        int
+	InspectSearchDirArg     string
+	InspectTemplateArg      string
+	InspectRelationKindsArg []string
 )
 
 var inspectCmd = &cobra.Command{
@@ -29,12 +31,17 @@ var inspectCmd = &cobra.Command{
 			return err
 		}
 
+		relKinds, err := inspect.RelationKindsFromStrings(InspectRelationKindsArg)
+		if err != nil {
+			return err
+		}
+
 		loc := file.Loc{
 			Path:   InspectFileArg,
 			Line:   InspectLineArg,
 			Column: InspectColumnArg,
 		}
-		result, err := inspect.Inspect(loc, InspectSearchDirArg)
+		result, err := inspect.Inspect(loc, InspectSearchDirArg, relKinds)
 		if err != nil {
 			return err
 		}
@@ -64,6 +71,10 @@ func init() {
 	inspectCmd.MarkFlagRequired("column")
 
 	inspectCmd.Flags().StringVarP(&InspectSearchDirArg, "searchDir", "d", ".", "Path to directory to search for relations outside the current package")
+
+	defaultRelationKinds := []string{"definition"}
+	relationKindsUsage := fmt.Sprintf("Kinds of relations to include, comma separated. Allowed values: [%s]", strings.Join(inspect.AllRelationKindStrings, ", "))
+	inspectCmd.Flags().StringSliceVarP(&InspectRelationKindsArg, "relationKinds", "r", defaultRelationKinds, relationKindsUsage)
 
 	defaultTpl := "{{range .Relations}}{{.Name}} {{.Path|RelPath}}:{{.Line}}:{{.Column}}\n{{end}}"
 	inspectCmd.Flags().StringVarP(&InspectTemplateArg, "template", "t", defaultTpl, "Go template for formatting result output")
