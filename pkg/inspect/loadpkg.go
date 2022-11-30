@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -60,48 +59,50 @@ func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string) (
 		return nil, err
 	}
 
-	// Load minimal metadata for all packages in each possible Go module,
-	// so we can quickly find packages that equal or import the target package.
-	var candidatePkgs []skeletonPkg
-	for _, dir := range possibleGoModDirs {
-		pkgs, err := goListSkeletonPkgs(dir) // Returns an empty slice if dir isn't in a Go module.
-		if err != nil {
-			return nil, err
-		}
-		candidatePkgs = append(candidatePkgs, pkgs...)
-	}
-
-	// Parse and typecheck packages that either equal or import the target package.
 	var resultPkgs []*packages.Package
 	var mu sync.Mutex
-	g := new(errgroup.Group)
-	g.SetLimit(runtime.NumCPU())
-	for _, candidatePkg := range candidatePkgs {
-		if !(candidatePkg.ImportPath == targetPkgId || candidatePkg.ImportsPkg(targetPkgId)) {
-			continue
-		}
-
-		pkgDir := candidatePkg.Dir // Capture for closure below.
+	g := new(errgroup.Group) // Do not set a limit, because nested `g.Go()` calls could deadlock.
+	for _, dir := range possibleGoModDirs {
+		candidatePkgDir := dir // Capture for closure below.
 		g.Go(func() error {
-			cfg := &packages.Config{
-				Mode: (packages.NeedFiles |
-					packages.NeedSyntax |
-					packages.NeedDeps |
-					packages.NeedTypes |
-					packages.NeedTypesInfo |
-					packages.NeedImports),
-				Dir:       pkgDir,
-				ParseFile: selectivelyParseFileFunc(-1),
-			}
-
-			pkgs, err := packages.Load(cfg, ".")
+			// Load minimal metadata for all packages in each possible Go module,
+			// so we can quickly find packages that equal or import the target package.
+			candidatePkgs, err := goListSkeletonPkgs(candidatePkgDir) // Returns an empty slice if dir isn't in a Go module.
 			if err != nil {
-				return errors.Wrapf(err, "packages.Load")
+				return err
 			}
 
-			mu.Lock()
-			resultPkgs = append(resultPkgs, pkgs...)
-			mu.Unlock()
+			// Parse and typecheck packages that either equal or import the target package.
+			for _, candidatePkg := range candidatePkgs {
+				if !(candidatePkg.ImportPath == targetPkgId || candidatePkg.ImportsPkg(targetPkgId)) {
+					continue
+				}
+
+				pkgDir := candidatePkg.Dir // Capture for closure below.
+				g.Go(func() error {
+					cfg := &packages.Config{
+						Mode: (packages.NeedFiles |
+							packages.NeedSyntax |
+							packages.NeedDeps |
+							packages.NeedTypes |
+							packages.NeedTypesInfo |
+							packages.NeedImports),
+						Dir:       pkgDir,
+						ParseFile: selectivelyParseFileFunc(-1),
+					}
+
+					pkgs, err := packages.Load(cfg, ".")
+					if err != nil {
+						return errors.Wrapf(err, "packages.Load")
+					}
+
+					mu.Lock()
+					resultPkgs = append(resultPkgs, pkgs...)
+					mu.Unlock()
+					return nil
+				})
+			}
+
 			return nil
 		})
 	}
