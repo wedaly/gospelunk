@@ -466,11 +466,9 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 		Path:   "testdata/testmodule009/iface.go",
 		Line:   3,
 		Column: 7,
-	}, "testdata/testmodule009") // TODO: back to testdata...
+	}, "testdata/testmodule009")
 
 	require.NoError(t, err)
-	require.NotNil(t, result)
-
 	expected := &Result{
 		Name: "MyInterface",
 		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.MyInterface",
@@ -525,11 +523,9 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 		Path:   "testdata/testmodule009/iface.go",
 		Line:   5,
 		Column: 3,
-	}, "testdata/testmodule009") // TODO: back to testdata...
+	}, "testdata/testmodule009")
 
 	require.NoError(t, err)
-	require.NotNil(t, result)
-
 	expected := &Result{
 		Name: "IfaceMethodTwo",
 		Type: "func(param github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.ParamType) int",
