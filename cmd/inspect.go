@@ -65,7 +65,7 @@ func init() {
 
 	inspectCmd.Flags().StringVarP(&InspectSearchDirArg, "searchDir", "d", ".", "Path to directory to search for relations outside the current package")
 
-	defaultTpl := "{{range .Relations}}{{.Name}} {{.Path|RelPath}}:{{.Line}}:{{.Column}}{{end}}\n"
+	defaultTpl := "{{range .Relations}}{{.Name}} {{.Path|RelPath}}:{{.Line}}:{{.Column}}\n{{end}}"
 	inspectCmd.Flags().StringVarP(&InspectTemplateArg, "template", "t", defaultTpl, "Go template for formatting result output")
 
 	rootCmd.AddCommand(inspectCmd)
