@@ -575,6 +575,43 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+func TestInspectInterfaceWithImplAndIfaceInDifferentPkgs(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule010/subpkgWithIface/iface.go",
+		Line:   5,
+		Column: 7,
+	}, "testdata/testmodule010")
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyInterface",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule010/subpkgWithIface.MyInterface",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "subpkgWithIface",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule010/subpkgWithIface/iface.go"),
+					Line:   5,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "subpkgWithImpl",
+				Name: "MyInterfaceImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule010/subpkgWithImpl/impl.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
 func BenchmarkInspect(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := Inspect(file.Loc{

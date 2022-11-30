@@ -90,13 +90,18 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 			continue
 		}
 
-		// Search every name defined in this package's scope for implementations of the interface.
-		scope := searchPkg.Types.Scope()
-		for _, name := range scope.Names() {
-			obj := scope.Lookup(name)
+		// Search every reference in this package for implementations of the interface.
+		seen := make(map[types.Object]struct{}, 0)
+		for _, obj := range searchPkg.TypesInfo.Uses {
 			if obj == nil || obj.Type() == types.Typ[types.Invalid] {
 				continue
 			}
+
+			if _, ok := seen[obj]; ok {
+				// Skip objects we've already processed.
+				continue
+			}
+			seen[obj] = struct{}{}
 
 			if _, ok := obj.Type().(*types.Named); !ok {
 				// Filter for only named types.

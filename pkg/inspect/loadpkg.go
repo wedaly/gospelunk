@@ -87,8 +87,7 @@ func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string) (
 							packages.NeedTypes |
 							packages.NeedTypesInfo |
 							packages.NeedImports),
-						Dir:       pkgDir,
-						ParseFile: selectivelyParseFileFunc(-1),
+						Dir: pkgDir,
 					}
 
 					pkgs, err := packages.Load(cfg, ".")
