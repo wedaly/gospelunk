@@ -181,7 +181,8 @@ func goListSkeletonPkgs(goModDir string) ([]skeletonPkg, error) {
 	cmd.Stderr = &stderrBuf
 
 	if err := cmd.Run(); err != nil {
-		if strings.HasPrefix("go: go.mod file not found", stderrBuf.String()) {
+		if strings.HasPrefix("go: go.mod file not found", stderrBuf.String()) ||
+			strings.Contains(stderrBuf.String(), "does not contain main module or its selected dependencies") {
 			// It's okay if we're not in a Go module.
 			return nil, nil
 		}
