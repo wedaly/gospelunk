@@ -15,7 +15,7 @@ func TestInspectLocalVariableDefinedInSameFunction(t *testing.T) {
 		Path:   "testdata/testmodule001/localvar.go",
 		Line:   7,
 		Column: 32,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule001", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -42,7 +42,7 @@ func TestInspectStructTypeLiteral(t *testing.T) {
 		Path:   "testdata/testmodule002/struct.go",
 		Line:   11,
 		Column: 7,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule002", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -69,7 +69,7 @@ func TestInspectStructLiteralField(t *testing.T) {
 		Path:   "testdata/testmodule002/struct.go",
 		Line:   12,
 		Column: 3,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule002", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -96,7 +96,7 @@ func TestInspectStructSelectionField(t *testing.T) {
 		Path:   "testdata/testmodule002/struct.go",
 		Line:   16,
 		Column: 23,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule002", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -123,7 +123,7 @@ func TestInspectStructMethodCall(t *testing.T) {
 		Path:   "testdata/testmodule004/methods.go",
 		Line:   28,
 		Column: 23,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule004", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -150,7 +150,7 @@ func TestInspectStructMethodCallOnReturnedValue(t *testing.T) {
 		Path:   "testdata/testmodule004/methods.go",
 		Line:   29,
 		Column: 32,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule004", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -177,7 +177,7 @@ func TestInspectInterfaceMethodCall(t *testing.T) {
 		Path:   "testdata/testmodule004/methods.go",
 		Line:   33,
 		Column: 27,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule004", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -204,7 +204,7 @@ func TestInspectInterfaceEmbeddedMethodCall(t *testing.T) {
 		Path:   "testdata/testmodule004/methods.go",
 		Line:   34,
 		Column: 27,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule004", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "String", result.Name)
@@ -219,7 +219,7 @@ func TestInspectFuncCallSameFile(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   14,
 		Column: 9,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule004", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -246,7 +246,7 @@ func TestInspectFuncCallOtherFile(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   15,
 		Column: 9,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule003", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -273,7 +273,7 @@ func TestInspectFuncCallOtherPkg(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   16,
 		Column: 14,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule003", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -300,7 +300,7 @@ func TestInspectFuncCallStdlib(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   17,
 		Column: 6,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule003", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "Printf", result.Name)
@@ -317,7 +317,7 @@ func TestInspectPkgNameInSelection(t *testing.T) {
 		Path:   "testdata/testmodule003/func.go",
 		Line:   17,
 		Column: 2,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule003", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -344,7 +344,7 @@ func TestInspectFileWithComments(t *testing.T) {
 		Path:   "testdata/testmodule005/comments.go",
 		Line:   12,
 		Column: 6,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule005", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "Println", result.Name)
@@ -361,7 +361,7 @@ func TestInspectIntegerLiteral(t *testing.T) {
 		Path:   "testdata/testmodule006/const.go",
 		Line:   5,
 		Column: 18,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule006", AllRelationKinds)
 	assert.EqualError(t, err, "Could not find AST node of type *ast.Ident at location testdata/testmodule006/const.go:5:18")
 	assert.Nil(t, result)
 }
@@ -371,7 +371,7 @@ func TestInspectIntegerConst(t *testing.T) {
 		Path:   "testdata/testmodule006/const.go",
 		Line:   13,
 		Column: 23,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule006", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -398,7 +398,7 @@ func TestInspectNil(t *testing.T) {
 		Path:   "testdata/testmodule006/const.go",
 		Line:   9,
 		Column: 10,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule006", AllRelationKinds)
 	require.NoError(t, err)
 	expected := &Result{
 		Name: "nil",
@@ -412,7 +412,7 @@ func TestInspectEmbeddedStruct(t *testing.T) {
 		Path:   "testdata/testmodule007/struct.go",
 		Line:   6,
 		Column: 10,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule007", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
@@ -439,7 +439,7 @@ func TestInspectFileWithCGo(t *testing.T) {
 		Path:   "testdata/testmodule008/cgo.go",
 		Line:   6,
 		Column: 6,
-	}, "", AllRelationKinds)
+	}, "testdata/testmodule008", AllRelationKinds)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	expected := &Result{
