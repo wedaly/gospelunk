@@ -36,11 +36,13 @@ gospelunk list ./...
 
 ### Inspect
 
-To lookup type information and the definition for an identifier in a Go file:
+To lookup type information, definitions, and references for an identifier in a Go file:
 
 ```
 gospelunk inspect -f <FILE> -l <LINE> -c <COLUMN>
 ```
 
 -	Line and column numbers are 1-indexed, and the column unit is bytes.
+-	The `--relationKinds` parameter controls which relations are loaded (definitions, references, or interface implementations).
+-	The `--searchDir` parameter controls where gospelunk searches for references and interface implementations.
 -	You can use the `--template` parameter to customize the Go template used to render the output.
