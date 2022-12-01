@@ -69,7 +69,8 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 
 	methodName := methodNameForInterfaceAtLoc(pkg, loc, ifaceType) // Empty string if not on method identifier.
 
-	searchPkgs, err := loadGoPackagesEqualToOrImportingPkg(pkg.ID, searchDir)
+	loadMode := packages.NeedDeps | packages.NeedTypes | packages.NeedTypesInfo | packages.NeedImports
+	searchPkgs, err := loadGoPackagesEqualToOrImportingPkg(pkg.ID, searchDir, loadMode)
 	if err != nil {
 		return err
 	}

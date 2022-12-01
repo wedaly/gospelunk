@@ -51,7 +51,7 @@ func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 	return nil, fmt.Errorf("Could not find Go package for path %q", loc.Path)
 }
 
-func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string) ([]*packages.Package, error) {
+func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string, mode packages.LoadMode) ([]*packages.Package, error) {
 	// Find possible Go modules in the search directory (recursively).
 	// This always includes the search directory itself, which may or may not be a Go module.
 	possibleGoModDirs, err := findPossibleGoModDirsInSearchDir(searchDir)
@@ -81,13 +81,8 @@ func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string) (
 				pkgDir := candidatePkg.Dir // Capture for closure below.
 				g.Go(func() error {
 					cfg := &packages.Config{
-						Mode: (packages.NeedFiles |
-							packages.NeedSyntax |
-							packages.NeedDeps |
-							packages.NeedTypes |
-							packages.NeedTypesInfo |
-							packages.NeedImports),
-						Dir: pkgDir,
+						Mode: mode,
+						Dir:  pkgDir,
 					}
 
 					pkgs, err := packages.Load(cfg, ".")
