@@ -68,6 +68,8 @@ func (rs RelationSlice) Less(i, j int) bool {
 		return rs[i].Pkg < rs[j].Pkg
 	} else if rs[i].Name != rs[j].Name {
 		return rs[i].Name < rs[j].Name
+	} else if rs[i].Loc.Path != rs[j].Loc.Path {
+		return rs[i].Loc.Path < rs[j].Loc.Path
 	} else if rs[i].Loc.Line != rs[j].Loc.Line {
 		return rs[i].Loc.Line < rs[j].Loc.Line
 	} else {
