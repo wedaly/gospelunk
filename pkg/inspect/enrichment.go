@@ -147,13 +147,47 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 		}
 	}
 
-	// Ensure relations returned in a consistent order.
-	relations := make(RelationSlice, 0, len(relationSet))
-	for r := range relationSet {
-		relations = append(relations, r)
+	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
+	return nil
+}
+
+func enrichResultRefRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
+	ident, err := astNodeAtLoc[*ast.Ident](pkg, loc)
+	if err != nil {
+		return err
 	}
-	sort.Stable(relations)
-	result.Relations = append(result.Relations, relations...)
+
+	if _, ok := pkg.TypesInfo.Defs[ident]; !ok {
+		return nil
+	}
+
+	targetPosition := pkg.Fset.Position(ident.Pos())
+
+	loadMode := packages.NeedName | packages.NeedDeps | packages.NeedTypes | packages.NeedTypesInfo
+	searchPkgs, err := loadGoPackagesEqualToOrImportingPkg(pkg.ID, searchDir, loadMode)
+	if err != nil {
+		return err
+	}
+
+	relationSet := make(map[Relation]struct{}, 0)
+	for _, searchPkg := range searchPkgs {
+		for refIdent, refObj := range searchPkg.TypesInfo.Uses {
+			refPosition := searchPkg.Fset.Position(refObj.Pos())
+			if refPosition != targetPosition {
+				continue
+			}
+
+			r := Relation{
+				Kind: RelationKindRef,
+				Pkg:  searchPkg.Name,
+				Name: refIdent.Name,
+				Loc:  fileLocForIdent(searchPkg, refIdent),
+			}
+			relationSet[r] = struct{}{}
+		}
+	}
+
+	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
 	return nil
 }
 
@@ -182,6 +216,15 @@ func fileLocForTypeObj(pkg *packages.Package, obj types.Object) file.Loc {
 		return file.Loc{}
 	}
 	position := pkg.Fset.Position(obj.Pos())
+	return file.Loc{
+		Path:   position.Filename,
+		Line:   position.Line,
+		Column: position.Column,
+	}
+}
+
+func fileLocForIdent(pkg *packages.Package, ident *ast.Ident) file.Loc {
+	position := pkg.Fset.Position(ident.Pos())
 	return file.Loc{
 		Path:   position.Filename,
 		Line:   position.Line,
@@ -237,4 +280,13 @@ func methodNameForInterfaceAtLoc(pkg *packages.Package, loc file.Loc, ifaceType 
 	}
 
 	return methodObj.Name()
+}
+
+func relationSetToSortedSlice(relationSet map[Relation]struct{}) []Relation {
+	relations := make(RelationSlice, 0, len(relationSet))
+	for r := range relationSet {
+		relations = append(relations, r)
+	}
+	sort.Stable(relations)
+	return relations
 }

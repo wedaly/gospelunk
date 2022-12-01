@@ -513,6 +513,36 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 					Column: 6,
 				},
 			},
+			{
+				Kind: "reference",
+				Pkg:  "subpkg",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
+					Line:   17,
+					Column: 9,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule009",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   23,
+					Column: 7,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule009",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   24,
+					Column: 7,
+				},
+			},
 		},
 	}
 	assert.Equal(t, expected, result)
@@ -605,6 +635,278 @@ func TestInspectInterfaceWithImplAndIfaceInDifferentPkgs(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule010/subpkgWithImpl/impl.go"),
 					Line:   3,
 					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "subpkgWithIface",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule010/subpkgWithIface/iface.go"),
+					Line:   9,
+					Column: 14,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestStructWithReference(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule011/subpkg/def.go",
+		Line:   3,
+		Column: 7,
+	}, "testdata/testmodule011", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule011/subpkg.MyStruct",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "subpkg",
+				Name: "MyStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "main",
+				Name: "MyStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/main.go"),
+					Line:   8,
+					Column: 14,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "subpkg",
+				Name: "MyStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   15,
+					Column: 9,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "subpkg",
+				Name: "MyStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
+					Line:   7,
+					Column: 22,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestStructFieldWithReference(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule011/subpkg/def.go",
+		Line:   4,
+		Column: 2,
+	}, "testdata/testmodule011", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "Foo",
+		Type: "string",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "subpkg",
+				Name: "Foo",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   4,
+					Column: 2,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "main",
+				Name: "Foo",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/main.go"),
+					Line:   8,
+					Column: 23,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestStructMethodWithReference(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule011/subpkg/def.go",
+		Line:   15,
+		Column: 20,
+	}, "testdata/testmodule011", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyMethod",
+		Type: "func() string",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "subpkg",
+				Name: "MyMethod",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   15,
+					Column: 19,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "subpkg",
+				Name: "MyMethod",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
+					Line:   9,
+					Column: 21,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestFunctionWithReference(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule011/subpkg/def.go",
+		Line:   7,
+		Column: 7,
+	}, "testdata/testmodule011", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyFunc",
+		Type: "func() string",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "subpkg",
+				Name: "MyFunc",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   7,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "subpkg",
+				Name: "MyFunc",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
+					Line:   13,
+					Column: 7,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestIfaceMethodWithReference(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule011/subpkg/def.go",
+		Line:   12,
+		Column: 3,
+	}, "testdata/testmodule011", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyMethod",
+		Type: "func() string",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "subpkg",
+				Name: "MyMethod",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   12,
+					Column: 2,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "subpkg",
+				Name: "MyMethod",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   15,
+					Column: 19,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "subpkg",
+				Name: "MyMethod",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
+					Line:   18,
+					Column: 21,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestStructReturnedFromStructMethod(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule012/main.go",
+		Line:   15,
+		Column: 2,
+	}, "testdata/testmodule012", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "B",
+		Type: "string",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "main",
+				Name: "B",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule012/main.go"),
+					Line:   15,
+					Column: 2,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "main",
+				Name: "B",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule012/main.go"),
+					Line:   6,
+					Column: 50,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "main",
+				Name: "B",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule012/main.go"),
+					Line:   19,
+					Column: 22,
 				},
 			},
 		},
