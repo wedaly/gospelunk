@@ -9,10 +9,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 	"golang.org/x/tools/go/packages"
 
 	"github.com/wedaly/gospelunk/pkg/file"
@@ -60,49 +58,38 @@ func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string, m
 	}
 
 	var resultPkgs []*packages.Package
-	var mu sync.Mutex
-	g := new(errgroup.Group) // Do not set a limit, because nested `g.Go()` calls could deadlock.
 	for _, dir := range possibleGoModDirs {
-		candidatePkgDir := dir // Capture for closure below.
-		g.Go(func() error {
-			// Load minimal metadata for all packages in each possible Go module,
-			// so we can quickly find packages that equal or import the target package.
-			candidatePkgs, err := goListSkeletonPkgs(candidatePkgDir) // Returns an empty slice if dir isn't in a Go module.
-			if err != nil {
-				return err
+		// Load minimal metadata for all packages in each possible Go module,
+		// so we can quickly find packages that equal or import the target package.
+		candidatePkgs, err := goListSkeletonPkgs(dir) // Returns an empty slice if dir isn't in a Go module.
+		if err != nil {
+			return nil, err
+		}
+
+		// Filter for pkgs that either equal or import the target package.
+		pkgPaths := make([]string, 0, len(candidatePkgs))
+		for _, pkg := range candidatePkgs {
+			if pkg.ImportPath == targetPkgId || pkg.ImportsPkg(targetPkgId) {
+				pkgPaths = append(pkgPaths, pkg.ImportPath)
 			}
+		}
 
-			// Parse and typecheck packages that either equal or import the target package.
-			for _, candidatePkg := range candidatePkgs {
-				if !(candidatePkg.ImportPath == targetPkgId || candidatePkg.ImportsPkg(targetPkgId)) {
-					continue
-				}
+		if len(pkgPaths) == 0 {
+			continue
+		}
 
-				pkgDir := candidatePkg.Dir // Capture for closure below.
-				g.Go(func() error {
-					cfg := &packages.Config{
-						Mode: mode,
-						Dir:  pkgDir,
-					}
+		// Parse and typecheck packages that either equal or import the target package.
+		cfg := &packages.Config{
+			Mode: mode,
+			Dir:  dir,
+		}
 
-					pkgs, err := packages.Load(cfg, ".")
-					if err != nil {
-						return errors.Wrapf(err, "packages.Load")
-					}
+		pkgs, err := packages.Load(cfg, pkgPaths...)
+		if err != nil {
+			return nil, errors.Wrapf(err, "packages.Load")
+		}
 
-					mu.Lock()
-					resultPkgs = append(resultPkgs, pkgs...)
-					mu.Unlock()
-					return nil
-				})
-			}
-
-			return nil
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return nil, err
+		resultPkgs = append(resultPkgs, pkgs...)
 	}
 
 	return resultPkgs, nil
@@ -150,7 +137,6 @@ func findPossibleGoModDirsInSearchDir(searchDir string) ([]string, error) {
 // output by the `go list` cmd (see `go help list`).
 type skeletonPkg struct {
 	ImportPath string // Equivalent to the ID field in packages.Package
-	Dir        string
 	Imports    []string
 }
 
@@ -170,7 +156,7 @@ func goListSkeletonPkgs(goModDir string) ([]skeletonPkg, error) {
 	// We use the `go list` command directly instead of packages.Load
 	// because we need the Dir field, which isn't exposed by packages.Load.
 	var stdoutBuf, stderrBuf bytes.Buffer
-	cmd := exec.Command("go", "list", "-json=ImportPath,Dir,Imports", "./...")
+	cmd := exec.Command("go", "list", "-json=ImportPath,Imports", "./...")
 	cmd.Dir = goModDir
 	cmd.Stdout = &stdoutBuf
 	cmd.Stderr = &stderrBuf
