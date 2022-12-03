@@ -67,16 +67,14 @@ func (rs RelationSlice) Len() int {
 
 // Less implements sort.Interface#Less
 func (rs RelationSlice) Less(i, j int) bool {
-	if rs[i].Pkg != rs[j].Pkg {
-		return rs[i].Pkg < rs[j].Pkg
-	} else if rs[i].Name != rs[j].Name {
-		return rs[i].Name < rs[j].Name
-	} else if rs[i].Loc.Path != rs[j].Loc.Path {
+	if rs[i].Loc.Path != rs[j].Loc.Path {
 		return rs[i].Loc.Path < rs[j].Loc.Path
 	} else if rs[i].Loc.Line != rs[j].Loc.Line {
 		return rs[i].Loc.Line < rs[j].Loc.Line
-	} else {
+	} else if rs[i].Loc.Column != rs[j].Loc.Column {
 		return rs[i].Loc.Column < rs[j].Loc.Column
+	} else {
+		return rs[i].Name < rs[j].Name
 	}
 }
 

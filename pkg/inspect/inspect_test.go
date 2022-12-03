@@ -485,16 +485,6 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 			},
 			{
 				Kind: "interfaceImplementation",
-				Pkg:  "subpkg",
-				Name: "MyInterfaceSubpkgImpl",
-				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
-					Line:   7,
-					Column: 6,
-				},
-			},
-			{
-				Kind: "interfaceImplementation",
 				Pkg:  "testmodule009",
 				Name: "MyInterfaceImpl",
 				Loc: file.Loc{
@@ -514,19 +504,19 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 				},
 			},
 			{
-				Kind: "reference",
+				Kind: "interfaceImplementation",
 				Pkg:  "subpkg",
-				Name: "MyInterface",
+				Name: "MyInterfaceSubpkgImpl",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
-					Line:   17,
-					Column: 9,
+					Line:   7,
+					Column: 6,
 				},
 			},
 			{
 				Kind: "reference",
 				Pkg:  "testmodule009",
-				Name: "MyInterface",
+				Name: "MyInterface in declaration of _",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule009/impl.go"),
 					Line:   23,
@@ -536,11 +526,21 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "testmodule009",
-				Name: "MyInterface",
+				Name: "MyInterface in declaration of _",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule009/impl.go"),
 					Line:   24,
 					Column: 7,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "subpkg",
+				Name: "MyInterface in declaration of _",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
+					Line:   17,
+					Column: 9,
 				},
 			},
 		},
@@ -572,16 +572,6 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 			},
 			{
 				Kind: "interfaceImplementation",
-				Pkg:  "subpkg",
-				Name: "IfaceMethodTwo",
-				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
-					Line:   13,
-					Column: 32,
-				},
-			},
-			{
-				Kind: "interfaceImplementation",
 				Pkg:  "testmodule009",
 				Name: "IfaceMethodTwo",
 				Loc: file.Loc{
@@ -598,6 +588,16 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule009/impl.go"),
 					Line:   19,
 					Column: 34,
+				},
+			},
+			{
+				Kind: "interfaceImplementation",
+				Pkg:  "subpkg",
+				Name: "IfaceMethodTwo",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
+					Line:   13,
+					Column: 32,
 				},
 			},
 		},
@@ -640,7 +640,7 @@ func TestInspectInterfaceWithImplAndIfaceInDifferentPkgs(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "subpkgWithIface",
-				Name: "MyInterface",
+				Name: "MyInterface in Print() params",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule010/subpkgWithIface/iface.go"),
 					Line:   9,
@@ -652,7 +652,7 @@ func TestInspectInterfaceWithImplAndIfaceInDifferentPkgs(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestStructWithReference(t *testing.T) {
+func TestInspectStructWithReference(t *testing.T) {
 	result, err := Inspect(file.Loc{
 		Path:   "testdata/testmodule011/subpkg/def.go",
 		Line:   3,
@@ -677,7 +677,7 @@ func TestStructWithReference(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "main",
-				Name: "MyStruct",
+				Name: "MyStruct in main() body",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/main.go"),
 					Line:   8,
@@ -687,7 +687,7 @@ func TestStructWithReference(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "subpkg",
-				Name: "MyStruct",
+				Name: "receiver in MyStruct.MyMethod()",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
 					Line:   15,
@@ -697,7 +697,7 @@ func TestStructWithReference(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "subpkg",
-				Name: "MyStruct",
+				Name: "MyStruct in PrintMyStruct() params",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
 					Line:   7,
@@ -709,7 +709,7 @@ func TestStructWithReference(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestStructFieldWithReference(t *testing.T) {
+func TestInspectStructFieldWithReference(t *testing.T) {
 	result, err := Inspect(file.Loc{
 		Path:   "testdata/testmodule011/subpkg/def.go",
 		Line:   4,
@@ -734,7 +734,7 @@ func TestStructFieldWithReference(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "main",
-				Name: "Foo",
+				Name: "Foo in main() body",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/main.go"),
 					Line:   8,
@@ -746,7 +746,7 @@ func TestStructFieldWithReference(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestStructMethodWithReference(t *testing.T) {
+func TestInspectStructMethodWithReference(t *testing.T) {
 	result, err := Inspect(file.Loc{
 		Path:   "testdata/testmodule011/subpkg/def.go",
 		Line:   15,
@@ -771,7 +771,7 @@ func TestStructMethodWithReference(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "subpkg",
-				Name: "MyMethod",
+				Name: "MyMethod in PrintMyStruct() body",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
 					Line:   9,
@@ -783,7 +783,7 @@ func TestStructMethodWithReference(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestFunctionWithReference(t *testing.T) {
+func TestInspectFunctionWithReference(t *testing.T) {
 	result, err := Inspect(file.Loc{
 		Path:   "testdata/testmodule011/subpkg/def.go",
 		Line:   7,
@@ -808,7 +808,7 @@ func TestFunctionWithReference(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "subpkg",
-				Name: "MyFunc",
+				Name: "MyFunc in CallMyFunc() body",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
 					Line:   13,
@@ -820,7 +820,7 @@ func TestFunctionWithReference(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestIfaceMethodWithReference(t *testing.T) {
+func TestInspectIfaceMethodWithReference(t *testing.T) {
 	result, err := Inspect(file.Loc{
 		Path:   "testdata/testmodule011/subpkg/def.go",
 		Line:   12,
@@ -855,7 +855,7 @@ func TestIfaceMethodWithReference(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "subpkg",
-				Name: "MyMethod",
+				Name: "MyMethod in PrintMyInterface() body",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
 					Line:   18,
@@ -867,7 +867,54 @@ func TestIfaceMethodWithReference(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestStructReturnedFromStructMethod(t *testing.T) {
+func TestInspectStructReturnedFromStructMethod(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule012/main.go",
+		Line:   14,
+		Column: 7,
+	}, "testdata/testmodule012", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "SecondStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule012.SecondStruct",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "main",
+				Name: "SecondStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule012/main.go"),
+					Line:   14,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "main",
+				Name: "SecondStruct returned by FirstStruct.ReturnSecondStruct()",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule012/main.go"),
+					Line:   18,
+					Column: 43,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "main",
+				Name: "SecondStruct in FirstStruct.ReturnSecondStruct() body",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule012/main.go"),
+					Line:   19,
+					Column: 9,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectStructFieldFromReturnValue(t *testing.T) {
 	result, err := Inspect(file.Loc{
 		Path:   "testdata/testmodule012/main.go",
 		Line:   15,
@@ -892,7 +939,7 @@ func TestStructReturnedFromStructMethod(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "main",
-				Name: "B",
+				Name: "B in main() body",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule012/main.go"),
 					Line:   6,
@@ -902,11 +949,283 @@ func TestStructReturnedFromStructMethod(t *testing.T) {
 			{
 				Kind: "reference",
 				Pkg:  "main",
-				Name: "B",
+				Name: "B in FirstStruct.ReturnSecondStruct() body",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule012/main.go"),
 					Line:   19,
 					Column: 22,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectStructWithVarDeclaration(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule013/values.go",
+		Line:   3,
+		Column: 7,
+	}, "testdata/testmodule013", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule013.MyStruct",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule013",
+				Name: "MyStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/values.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyStruct in declaration of myStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/values.go"),
+					Line:   8,
+					Column: 11,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectTypeWithVarAndConstDeclaration(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule013/values.go",
+		Line:   5,
+		Column: 7,
+	}, "testdata/testmodule013", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyInt",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule013.MyInt",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule013",
+				Name: "MyInt",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/values.go"),
+					Line:   5,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyInt in declaration of x, y",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/values.go"),
+					Line:   9,
+					Column: 11,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyInt in declaration of z",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/values.go"),
+					Line:   12,
+					Column: 9,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectTypeWithReferenceInFuncTypeArg(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule013/func.go",
+		Line:   5,
+		Column: 7,
+	}, "testdata/testmodule013", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyArg",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule013.MyArg",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule013",
+				Name: "MyArg",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/func.go"),
+					Line:   5,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyArg in params for func type MyFunc",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/func.go"),
+					Line:   9,
+					Column: 20,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyArg in ConstructStructWithFuncField() body",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/func.go"),
+					Line:   17,
+					Column: 21,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectTypeWithReferenceInFuncTypeReturn(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule013/func.go",
+		Line:   7,
+		Column: 7,
+	}, "testdata/testmodule013", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyReturn",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule013.MyReturn",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule013",
+				Name: "MyReturn",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/func.go"),
+					Line:   7,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyReturn returned by func type MyFunc",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/func.go"),
+					Line:   9,
+					Column: 27,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyReturn in ConstructStructWithFuncField() body",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/func.go"),
+					Line:   17,
+					Column: 28,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyReturn in ConstructStructWithFuncField() body",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/func.go"),
+					Line:   18,
+					Column: 11,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectTypeWithEmbeddedStructRef(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule013/embed.go",
+		Line:   3,
+		Column: 7,
+	}, "testdata/testmodule013", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyEmbeddedStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule013.MyEmbeddedStruct",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule013",
+				Name: "MyEmbeddedStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/embed.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyEmbeddedStruct embedded in struct MyParentStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/embed.go"),
+					Line:   6,
+					Column: 2,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectTypeReturnedByMethodWithPointerReceiver(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule013/method.go",
+		Line:   3,
+		Column: 7,
+	}, "testdata/testmodule013", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyMethodReturn",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule013.MyMethodReturn",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule013",
+				Name: "MyMethodReturn",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/method.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyMethodReturn returned by MyStructWithPointerRecv.MyMethod()",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/method.go"),
+					Line:   7,
+					Column: 46,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule013",
+				Name: "MyMethodReturn in MyStructWithPointerRecv.MyMethod() body",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule013/method.go"),
+					Line:   8,
+					Column: 9,
 				},
 			},
 		},
