@@ -49,7 +49,7 @@ func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 	return nil, fmt.Errorf("Could not find Go package for path %q", loc.Path)
 }
 
-func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string, mode packages.LoadMode) ([]*packages.Package, error) {
+func loadGoPackagesMatchingPredicate(searchDir string, mode packages.LoadMode, f func(skeletonPkg) bool) ([]*packages.Package, error) {
 	// Find possible Go modules in the search directory (recursively).
 	// This always includes the search directory itself, which may or may not be a Go module.
 	possibleGoModDirs, err := findPossibleGoModDirsInSearchDir(searchDir)
@@ -66,10 +66,10 @@ func loadGoPackagesEqualToOrImportingPkg(targetPkgId string, searchDir string, m
 			return nil, err
 		}
 
-		// Filter for pkgs that either equal or import the target package.
+		// Filter for pkgs that match the predicate.
 		pkgPaths := make([]string, 0, len(candidatePkgs))
 		for _, pkg := range candidatePkgs {
-			if pkg.ImportPath == targetPkgId || pkg.ImportsPkg(targetPkgId) {
+			if f(pkg) {
 				pkgPaths = append(pkgPaths, pkg.ImportPath)
 			}
 		}

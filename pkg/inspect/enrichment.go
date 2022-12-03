@@ -72,7 +72,9 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 	methodName := methodNameForInterfaceAtLoc(pkg, loc, ifaceType) // Empty string if not on method identifier.
 
 	loadMode := packages.NeedDeps | packages.NeedTypes | packages.NeedTypesInfo | packages.NeedImports
-	searchPkgs, err := loadGoPackagesEqualToOrImportingPkg(pkg.ID, searchDir, loadMode)
+	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, func(candidate skeletonPkg) bool {
+		return candidate.ImportPath == pkg.ID || candidate.ImportsPkg(pkg.ID)
+	})
 	if err != nil {
 		return err
 	}
@@ -170,7 +172,9 @@ func enrichResultRefRelation(result *Result, pkg *packages.Package, loc file.Loc
 		packages.NeedDeps |
 		packages.NeedTypes |
 		packages.NeedTypesInfo)
-	searchPkgs, err := loadGoPackagesEqualToOrImportingPkg(pkg.ID, searchDir, loadMode)
+	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, func(candidate skeletonPkg) bool {
+		return candidate.ImportPath == pkg.ID || (ident.IsExported() && candidate.ImportsPkg(pkg.ID))
+	})
 	if err != nil {
 		return err
 	}
