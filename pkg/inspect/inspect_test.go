@@ -484,7 +484,7 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 				},
 			},
 			{
-				Kind: "interfaceImplementation",
+				Kind: "implementation",
 				Pkg:  "testmodule009",
 				Name: "MyInterfaceImpl",
 				Loc: file.Loc{
@@ -494,7 +494,7 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 				},
 			},
 			{
-				Kind: "interfaceImplementation",
+				Kind: "implementation",
 				Pkg:  "testmodule009",
 				Name: "MyInterfacePointerImpl",
 				Loc: file.Loc{
@@ -504,7 +504,7 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 				},
 			},
 			{
-				Kind: "interfaceImplementation",
+				Kind: "implementation",
 				Pkg:  "subpkg",
 				Name: "MyInterfaceSubpkgImpl",
 				Loc: file.Loc{
@@ -571,7 +571,7 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 				},
 			},
 			{
-				Kind: "interfaceImplementation",
+				Kind: "implementation",
 				Pkg:  "testmodule009",
 				Name: "MyInterfaceImpl.IfaceMethodTwo()",
 				Loc: file.Loc{
@@ -581,7 +581,7 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 				},
 			},
 			{
-				Kind: "interfaceImplementation",
+				Kind: "implementation",
 				Pkg:  "testmodule009",
 				Name: "MyInterfacePointerImpl.IfaceMethodTwo()",
 				Loc: file.Loc{
@@ -591,7 +591,7 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 				},
 			},
 			{
-				Kind: "interfaceImplementation",
+				Kind: "implementation",
 				Pkg:  "subpkg",
 				Name: "MyInterfaceSubpkgImpl.IfaceMethodTwo()",
 				Loc: file.Loc{
@@ -628,7 +628,7 @@ func TestInspectInterfaceWithImplAndIfaceInDifferentPkgs(t *testing.T) {
 				},
 			},
 			{
-				Kind: "interfaceImplementation",
+				Kind: "implementation",
 				Pkg:  "subpkgWithImpl",
 				Name: "MyInterfaceImpl",
 				Loc: file.Loc{
@@ -843,7 +843,7 @@ func TestInspectIfaceMethodWithReference(t *testing.T) {
 				},
 			},
 			{
-				Kind: "interfaceImplementation",
+				Kind: "implementation",
 				Pkg:  "subpkg",
 				Name: "MyStruct.MyMethod()",
 				Loc: file.Loc{

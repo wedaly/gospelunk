@@ -63,7 +63,7 @@ func enrichResultDefRelation(result *Result, pkg *packages.Package, loc file.Loc
 	return nil
 }
 
-func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
+func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
 	ifaceName, ifaceType := interfaceNameAndTypeAtFileLoc(pkg, loc)
 	if ifaceType == nil || ifaceType.Empty() {
 		return nil
@@ -128,7 +128,7 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 				if methodName == "" {
 					// If we're not looking for a specific method, the relation points to the implementation of the interface type.
 					r := Relation{
-						Kind: RelationKindIfaceImpl,
+						Kind: RelationKindImpl,
 						Pkg:  pkgNameForTypeObj(obj),
 						Name: obj.Name(),
 						Loc:  fileLocForTypeObj(searchPkg, obj),
@@ -139,7 +139,7 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 					methodObj, _, _ := types.LookupFieldOrMethod(obj.Type(), true, searchPkg.Types, methodName)
 					if methodObj != nil {
 						r := Relation{
-							Kind: RelationKindIfaceImpl,
+							Kind: RelationKindImpl,
 							Pkg:  pkgNameForTypeObj(methodObj),
 							Name: fmt.Sprintf("%s.%s()", obj.Name(), methodObj.Name()),
 							Loc:  fileLocForTypeObj(searchPkg, methodObj),

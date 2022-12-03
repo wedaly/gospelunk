@@ -37,8 +37,8 @@ func enrichmentForRelKind(relKind RelationKind) enrichResultFunc {
 	switch relKind {
 	case RelationKindDef:
 		return enrichResultDefRelation
-	case RelationKindIfaceImpl:
-		return enrichResultIfaceImplRelation
+	case RelationKindImpl:
+		return enrichResultImplRelation
 	case RelationKindRef:
 		return enrichResultRefRelation
 	default:
