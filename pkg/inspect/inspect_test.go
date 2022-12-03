@@ -573,7 +573,7 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 			{
 				Kind: "interfaceImplementation",
 				Pkg:  "testmodule009",
-				Name: "IfaceMethodTwo",
+				Name: "MyInterfaceImpl.IfaceMethodTwo",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule009/impl.go"),
 					Line:   9,
@@ -583,7 +583,7 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 			{
 				Kind: "interfaceImplementation",
 				Pkg:  "testmodule009",
-				Name: "IfaceMethodTwo",
+				Name: "MyInterfacePointerImpl.IfaceMethodTwo",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule009/impl.go"),
 					Line:   19,
@@ -593,7 +593,7 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 			{
 				Kind: "interfaceImplementation",
 				Pkg:  "subpkg",
-				Name: "IfaceMethodTwo",
+				Name: "MyInterfaceSubpkgImpl.IfaceMethodTwo",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
 					Line:   13,
@@ -845,7 +845,7 @@ func TestInspectIfaceMethodWithReference(t *testing.T) {
 			{
 				Kind: "interfaceImplementation",
 				Pkg:  "subpkg",
-				Name: "MyMethod",
+				Name: "MyStruct.MyMethod",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
 					Line:   15,
