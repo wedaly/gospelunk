@@ -1233,6 +1233,80 @@ func TestInspectTypeReturnedByMethodWithPointerReceiver(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+func TestInspectLocalVar(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule014/localref.go",
+		Line:   6,
+		Column: 2,
+	}, "testdata/testmodule014", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "x",
+		Type: "string",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule014",
+				Name: "x",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule014/localref.go"),
+					Line:   6,
+					Column: 2,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule014",
+				Name: "x in funcWithLocalVar() body",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule014/localref.go"),
+					Line:   7,
+					Column: 19,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectPrivateVar(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule014/privatevar.go",
+		Line:   5,
+		Column: 5,
+	}, "testdata/testmodule014", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "privateVar",
+		Type: "int",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule014",
+				Name: "privateVar",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule014/privatevar.go"),
+					Line:   5,
+					Column: 5,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule014",
+				Name: "privateVar in funcUsingPrivateVar() body",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule014/privatevar.go"),
+					Line:   8,
+					Column: 19,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
 func BenchmarkInspect(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := Inspect(file.Loc{
