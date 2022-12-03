@@ -484,36 +484,6 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 				},
 			},
 			{
-				Kind: "implementation",
-				Pkg:  "testmodule009",
-				Name: "MyInterfaceImpl",
-				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule009/impl.go"),
-					Line:   3,
-					Column: 6,
-				},
-			},
-			{
-				Kind: "implementation",
-				Pkg:  "testmodule009",
-				Name: "MyInterfacePointerImpl",
-				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule009/impl.go"),
-					Line:   13,
-					Column: 6,
-				},
-			},
-			{
-				Kind: "implementation",
-				Pkg:  "subpkg",
-				Name: "MyInterfaceSubpkgImpl",
-				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
-					Line:   7,
-					Column: 6,
-				},
-			},
-			{
 				Kind: "reference",
 				Pkg:  "testmodule009",
 				Name: "MyInterface in declaration of _",
@@ -541,6 +511,36 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
 					Line:   17,
 					Column: 9,
+				},
+			},
+			{
+				Kind: "implementation",
+				Pkg:  "testmodule009",
+				Name: "MyInterfaceImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "implementation",
+				Pkg:  "testmodule009",
+				Name: "MyInterfacePointerImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   13,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "implementation",
+				Pkg:  "subpkg",
+				Name: "MyInterfaceSubpkgImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
+					Line:   7,
+					Column: 6,
 				},
 			},
 		},
@@ -628,16 +628,6 @@ func TestInspectInterfaceWithImplAndIfaceInDifferentPkgs(t *testing.T) {
 				},
 			},
 			{
-				Kind: "implementation",
-				Pkg:  "subpkgWithImpl",
-				Name: "MyInterfaceImpl",
-				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule010/subpkgWithImpl/impl.go"),
-					Line:   3,
-					Column: 6,
-				},
-			},
-			{
 				Kind: "reference",
 				Pkg:  "subpkgWithIface",
 				Name: "MyInterface in Print() params",
@@ -645,6 +635,16 @@ func TestInspectInterfaceWithImplAndIfaceInDifferentPkgs(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule010/subpkgWithIface/iface.go"),
 					Line:   9,
 					Column: 14,
+				},
+			},
+			{
+				Kind: "implementation",
+				Pkg:  "subpkgWithImpl",
+				Name: "MyInterfaceImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule010/subpkgWithImpl/impl.go"),
+					Line:   3,
+					Column: 6,
 				},
 			},
 		},
@@ -843,16 +843,6 @@ func TestInspectIfaceMethodWithReference(t *testing.T) {
 				},
 			},
 			{
-				Kind: "implementation",
-				Pkg:  "subpkg",
-				Name: "MyStruct.MyMethod()",
-				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
-					Line:   15,
-					Column: 19,
-				},
-			},
-			{
 				Kind: "reference",
 				Pkg:  "subpkg",
 				Name: "MyMethod in PrintMyInterface() body",
@@ -860,6 +850,16 @@ func TestInspectIfaceMethodWithReference(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
 					Line:   18,
 					Column: 21,
+				},
+			},
+			{
+				Kind: "implementation",
+				Pkg:  "subpkg",
+				Name: "MyStruct.MyMethod()",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   15,
+					Column: 19,
 				},
 			},
 		},

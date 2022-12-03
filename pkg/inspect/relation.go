@@ -23,7 +23,7 @@ var AllRelationKinds []RelationKind
 var AllRelationKindStrings []string
 
 func init() {
-	AllRelationKinds = []RelationKind{RelationKindDef, RelationKindImpl, RelationKindRef}
+	AllRelationKinds = []RelationKind{RelationKindDef, RelationKindRef, RelationKindImpl}
 	for _, r := range AllRelationKinds {
 		AllRelationKindStrings = append(AllRelationKindStrings, string(r))
 	}
