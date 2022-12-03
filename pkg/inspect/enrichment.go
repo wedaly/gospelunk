@@ -139,7 +139,7 @@ func enrichResultIfaceImplRelation(result *Result, pkg *packages.Package, loc fi
 						r := Relation{
 							Kind: RelationKindIfaceImpl,
 							Pkg:  pkgNameForTypeObj(methodObj),
-							Name: fmt.Sprintf("%s.%s", obj.Name(), methodObj.Name()),
+							Name: fmt.Sprintf("%s.%s()", obj.Name(), methodObj.Name()),
 							Loc:  fileLocForTypeObj(searchPkg, methodObj),
 						}
 						relationSet[r] = struct{}{}
