@@ -306,6 +306,11 @@ func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.L
 
 	implType := implObj.Type().Underlying()
 
+	if _, ok := implType.(*types.Interface); ok {
+		// Skip if this is an interface.
+		return nil
+	}
+
 	methodName := methodNameForTypeAtLoc(pkg, loc, implType) // Empty string if not on method identifier.
 
 	loadMode := (packages.NeedDeps |
