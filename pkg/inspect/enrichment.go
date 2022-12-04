@@ -292,12 +292,16 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 }
 
 func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
-	typeSpec, err := astNodeAtLoc[*ast.TypeSpec](pkg, loc)
-	if err != nil {
-		// Can't find a typespec, so this isn't an implementation.
-		return nil
+	if typeSpec, err := astNodeAtLoc[*ast.TypeSpec](pkg, loc); err != nil && typeSpec != nil {
+		return enrichResultIfaceRelationFromTypeSpec(result, pkg, loc, searchDir, typeSpec)
 	}
 
+	// TODO: if it's a func decl, lookup the method...
+
+	return nil
+}
+
+func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, typeSpec *ast.TypeSpec) error {
 	implObj, ok := pkg.TypesInfo.Defs[typeSpec.Name]
 	if !ok {
 		// Can't find the definition, so skip it.
@@ -310,8 +314,6 @@ func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.L
 		// Skip if this is an interface.
 		return nil
 	}
-
-	methodName := methodNameForTypeAtLoc(pkg, loc, implType) // Empty string if not on method identifier.
 
 	loadMode := (packages.NeedDeps |
 		packages.NeedTypes |
@@ -362,28 +364,13 @@ func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.L
 
 			// Check if the interface implements this type OR a pointer to this type.
 			if types.Implements(pkgImplType, ifaceType) || types.Implements(types.NewPointer(pkgImplType), ifaceType) {
-				if methodName == "" {
-					// If we're not looking for a specific method, the relation points to the implementation of the interface type.
-					r := Relation{
-						Kind: RelationKindIface,
-						Pkg:  pkgNameForTypeObj(obj),
-						Name: obj.Name(),
-						Loc:  fileLocForTypeObj(searchPkg, obj),
-					}
-					relationSet[r] = struct{}{}
-				} else {
-					// If we're looking for a specific method, the relation points to the implementation of the method.
-					methodObj, _, _ := types.LookupFieldOrMethod(obj.Type(), true, searchPkg.Types, methodName)
-					if methodObj != nil {
-						r := Relation{
-							Kind: RelationKindIface,
-							Pkg:  pkgNameForTypeObj(methodObj),
-							Name: fmt.Sprintf("%s.%s()", obj.Name(), methodObj.Name()),
-							Loc:  fileLocForTypeObj(searchPkg, methodObj),
-						}
-						relationSet[r] = struct{}{}
-					}
+				r := Relation{
+					Kind: RelationKindIface,
+					Pkg:  pkgNameForTypeObj(obj),
+					Name: obj.Name(),
+					Loc:  fileLocForTypeObj(searchPkg, obj),
 				}
+				relationSet[r] = struct{}{}
 			}
 		}
 	}
