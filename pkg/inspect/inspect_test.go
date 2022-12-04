@@ -1307,6 +1307,107 @@ func TestInspectPrivateVar(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+func TestInspectStructWithReferenceInTest(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule015/def.go",
+		Line:   3,
+		Column: 6,
+	}, "testdata/testmodule015", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule015.MyStruct",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule015",
+				Name: "MyStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule015/def.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule015",
+				Name: "MyStruct in MyFunc() params",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule015/def.go"),
+					Line:   7,
+					Column: 15,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectReferenceToStructInTest(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule015/def_test.go",
+		Line:   10,
+		Column: 7,
+	}, "testdata/testmodule015", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule015.MyStruct",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule015",
+				Name: "MyStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule015/def.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectStructDefinedAndReferencedInTest(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule015/def_test.go",
+		Line:   5,
+		Column: 6,
+	}, "testdata/testmodule015", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyTestStruct",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule015.MyTestStruct",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule015",
+				Name: "MyTestStruct",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule015/def_test.go"),
+					Line:   5,
+					Column: 6,
+				},
+			},
+			{
+				Kind: "reference",
+				Pkg:  "testmodule015",
+				Name: "MyTestStruct in declaration of testVar",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule015/def_test.go"),
+					Line:   7,
+					Column: 13,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
 func BenchmarkInspect(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := Inspect(file.Loc{

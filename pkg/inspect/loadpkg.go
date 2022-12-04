@@ -16,6 +16,10 @@ import (
 	"github.com/wedaly/gospelunk/pkg/file"
 )
 
+func isGoTestFile(path string) bool {
+	return strings.HasSuffix(filepath.Base(path), "_test.go")
+}
+
 func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 	absPath, err := filepath.Abs(loc.Path)
 	if err != nil {
@@ -23,14 +27,15 @@ func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 	}
 
 	cfg := &packages.Config{
-		Mode: (packages.NeedFiles |
+		Mode: (packages.NeedName |
+			packages.NeedFiles |
 			packages.NeedSyntax |
 			packages.NeedDeps |
 			packages.NeedTypes |
 			packages.NeedTypesInfo),
 		Dir:       filepath.Dir(absPath),
 		ParseFile: selectivelyParseFileFunc(absPath, loc.Line),
-		Tests:     true,
+		Tests:     isGoTestFile(loc.Path),
 	}
 
 	pkgs, err := packages.Load(cfg, ".")
@@ -38,6 +43,10 @@ func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 		return nil, errors.Wrapf(err, "packages.Load")
 	}
 
+	// If tests are included, pkgs will include both test and non-test packages.
+	// The test packages have both test files *and* non-test Go files.
+	// For non-test files, this loop will choose whichever package comes first
+	// (when using the default build tool backend, that will be the non-test pkg).
 	for _, pkg := range pkgs {
 		for _, goFilePath := range pkg.GoFiles {
 			if absPath == goFilePath {
@@ -49,12 +58,18 @@ func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 	return nil, fmt.Errorf("Could not find Go package for path %q", loc.Path)
 }
 
-func loadGoPackagesMatchingPredicate(searchDir string, mode packages.LoadMode, f func(skeletonPkg) bool) ([]*packages.Package, error) {
+func loadGoPackagesMatchingPredicate(searchDir string, mode packages.LoadMode, includeTests bool, f func(skeletonPkg) bool) ([]*packages.Package, error) {
 	// Find possible Go modules in the search directory (recursively).
 	// This always includes the search directory itself, which may or may not be a Go module.
 	possibleGoModDirs, err := findPossibleGoModDirsInSearchDir(searchDir)
 	if err != nil {
 		return nil, err
+	}
+
+	if includeTests {
+		// Needed to deduplicate test/non-test pkgs.
+		mode |= packages.NeedName
+		mode |= packages.NeedFiles
 	}
 
 	var resultPkgs []*packages.Package
@@ -80,8 +95,9 @@ func loadGoPackagesMatchingPredicate(searchDir string, mode packages.LoadMode, f
 
 		// Parse and typecheck packages that either equal or import the target package.
 		cfg := &packages.Config{
-			Mode: mode,
-			Dir:  dir,
+			Mode:  mode,
+			Dir:   dir,
+			Tests: includeTests,
 		}
 
 		pkgs, err := packages.Load(cfg, pkgPaths...)
@@ -89,10 +105,42 @@ func loadGoPackagesMatchingPredicate(searchDir string, mode packages.LoadMode, f
 			return nil, errors.Wrapf(err, "packages.Load")
 		}
 
+		// If tests are included, pkgs will include both test and non-test packages.
+		// The test packages have both test files *and* non-test Go files.
+		// Deduplicate these by choosing the test package over the non-test package.
+		if includeTests {
+			pkgs = deduplicateTestPkgs(pkgs)
+		}
+
 		resultPkgs = append(resultPkgs, pkgs...)
 	}
 
 	return resultPkgs, nil
+}
+
+func deduplicateTestPkgs(pkgs []*packages.Package) []*packages.Package {
+	pkgSet := make(map[string]*packages.Package, len(pkgs))
+	for _, pkg := range pkgs {
+		if _, ok := pkgSet[pkg.PkgPath]; !ok {
+			// Haven't seen this pkg yet, so choose it.
+			pkgSet[pkg.PkgPath] = pkg
+			continue
+		}
+
+		for _, goFilePath := range pkg.GoFiles {
+			if isGoTestFile(goFilePath) {
+				// Prioritize test pkg over non-test pkg.
+				pkgSet[pkg.PkgPath] = pkg
+				break
+			}
+		}
+	}
+
+	dedupedPkgs := make([]*packages.Package, 0, len(pkgSet))
+	for _, pkg := range pkgSet {
+		dedupedPkgs = append(dedupedPkgs, pkg)
+	}
+	return dedupedPkgs
 }
 
 func findPossibleGoModDirsInSearchDir(searchDir string) ([]string, error) {

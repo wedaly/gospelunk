@@ -80,8 +80,10 @@ func enrichResultRefRelation(result *Result, pkg *packages.Package, loc file.Loc
 		packages.NeedDeps |
 		packages.NeedTypes |
 		packages.NeedTypesInfo)
-	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, func(candidate skeletonPkg) bool {
-		return candidate.ImportPath == pkg.ID || (ident.IsExported() && candidate.ImportsPkg(pkg.ID))
+
+	includeTests := isGoTestFile(loc.Path)
+	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, includeTests, func(candidate skeletonPkg) bool {
+		return candidate.ImportPath == pkg.PkgPath || (ident.IsExported() && candidate.ImportsPkg(pkg.ID))
 	})
 	if err != nil {
 		return err
@@ -204,9 +206,14 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 
 	methodName := methodNameForInterfaceAtLoc(pkg, loc, ifaceType) // Empty string if not on method identifier.
 
-	loadMode := packages.NeedDeps | packages.NeedTypes | packages.NeedTypesInfo | packages.NeedImports
-	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, func(candidate skeletonPkg) bool {
-		return candidate.ImportPath == pkg.ID || candidate.ImportsPkg(pkg.ID)
+	loadMode := (packages.NeedDeps |
+		packages.NeedTypes |
+		packages.NeedTypesInfo |
+		packages.NeedImports)
+
+	includeTests := isGoTestFile(loc.Path)
+	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, includeTests, func(candidate skeletonPkg) bool {
+		return candidate.ImportPath == pkg.PkgPath || candidate.ImportsPkg(pkg.ID)
 	})
 	if err != nil {
 		return err
