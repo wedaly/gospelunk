@@ -29,7 +29,7 @@ func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 			packages.NeedTypes |
 			packages.NeedTypesInfo),
 		Dir:       filepath.Dir(absPath),
-		ParseFile: selectivelyParseFileFunc(loc.Line),
+		ParseFile: selectivelyParseFileFunc(absPath, loc.Line),
 		Tests:     true,
 	}
 

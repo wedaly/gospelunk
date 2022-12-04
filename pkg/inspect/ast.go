@@ -69,8 +69,9 @@ func astFileForPath(pkg *packages.Package, path string) (*ast.File, error) {
 }
 
 // selectivelyParseFileFunc removes function bodies that do not contain the target line.
-func selectivelyParseFileFunc(line int) func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
+func selectivelyParseFileFunc(targetFilename string, targetLine int) func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
 	return func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
+		isTargetFile := filename == targetFilename
 		astFile, err := parser.ParseFile(fset, filename, src, 0)
 		if err != nil {
 			return nil, err
@@ -90,7 +91,7 @@ func selectivelyParseFileFunc(line int) func(fset *token.FileSet, filename strin
 
 			start := fset.Position(funcDecl.Body.Lbrace)
 			end := fset.Position(funcDecl.Body.Rbrace)
-			if line < start.Line || end.Line < line {
+			if !isTargetFile || targetLine < start.Line || targetLine > end.Line {
 				funcDecl.Body = nil
 				return false
 			} else {
