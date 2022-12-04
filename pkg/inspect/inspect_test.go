@@ -548,6 +548,33 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+func TestInspectImplOfInterface(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule009/impl.go",
+		Line:   3,
+		Column: 7,
+	}, "testdata/testmodule009", AllRelationKinds)
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyInterfaceImpl",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.MyInterfaceImpl",
+		Relations: []Relation{
+			{
+				Kind: "definition",
+				Pkg:  "testmodule009",
+				Name: "MyInterfaceImpl",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Line:   3,
+					Column: 7,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
 func TestInspectInterfaceWithImplMethod(t *testing.T) {
 	result, err := Inspect(file.Loc{
 		Path:   "testdata/testmodule009/iface.go",

@@ -474,7 +474,7 @@ func implTypeInPkgScopeWithName(pkg *packages.Package, name string) types.Type {
 	if implDefObj == nil {
 		return nil
 	}
-	return implDefObj.Type().Underlying()
+	return implDefObj.Type()
 }
 
 func methodNameForTypeAtLoc(pkg *packages.Package, loc file.Loc, targetType types.Type) string {
