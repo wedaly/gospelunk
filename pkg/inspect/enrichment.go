@@ -206,7 +206,8 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 
 	methodName := methodNameForTypeAtLoc(pkg, loc, ifaceType) // Empty string if not on method identifier.
 
-	loadMode := (packages.NeedDeps |
+	loadMode := (packages.NeedName |
+		packages.NeedDeps |
 		packages.NeedTypes |
 		packages.NeedTypesInfo |
 		packages.NeedImports)
@@ -223,8 +224,8 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 	for _, searchPkg := range searchPkgs {
 		// Lookup the interface type either in the package or its imports.
 		// We need this to check if other types in the package implement the interface.
-		// (We can't use ifaceType because it comes from a different package, so isn't comparable to types in this pkg.)
-		pkgIfaceType := interfaceTypeInPkgScopeWithName(searchPkg, ifaceName)
+		// (We can't use ifaceType directly because it comes from a different package, so it isn't comparable to types in this pkg.)
+		var pkgIfaceType *types.Interface
 		if searchPkg.PkgPath == pkg.PkgPath {
 			pkgIfaceType = interfaceTypeInPkgScopeWithName(searchPkg, ifaceName)
 		} else if importedPkg, ok := searchPkg.Imports[pkg.PkgPath]; ok {
