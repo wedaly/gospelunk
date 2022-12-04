@@ -324,14 +324,63 @@ func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.L
 	relationSet := make(map[Relation]struct{}, 0)
 	for _, searchPkg := range searchPkgs {
 		// Lookup the impl type either in the package or its imports.
-		// We need this to find interfaces in the package that implement this type.
-		// (We can't use implType because it comes from a different package, so isn't comparable to types in this pkg.)
-		pkgImplType := implTypeInPkgScopeWithName(searchPkg, implObj.Name())
+		// We need this to find interfaces in this package that implement the target implementation.
+		// (We can't use implType directly because it comes from a different package, so it isn't comparable to types in this pkg.)
+		var pkgImplType types.Type
 		if searchPkg.PkgPath == pkg.PkgPath {
-			// TODO
+			pkgImplType = implTypeInPkgScopeWithName(searchPkg, implObj.Name())
+		} else if importedPkg, ok := searchPkg.Imports[pkg.PkgPath]; ok {
+			pkgImplType = implTypeInPkgScopeWithName(importedPkg, implObj.Name())
 		}
 
-		// TODO
+		if pkgImplType == nil {
+			continue
+		}
+
+		// Search every reference in this package for an interface implementing the target type.
+		seen := make(map[types.Object]struct{})
+		for _, obj := range searchPkg.TypesInfo.Uses {
+			if obj == nil || obj.Type() == types.Typ[types.Invalid] {
+				continue
+			}
+
+			ifaceType, ok := obj.Type().Underlying().(*types.Interface)
+			if !ok {
+				// Not an interface.
+				continue
+			}
+
+			if _, ok := seen[obj]; ok {
+				// Skip intefaces we've already seen.
+				continue
+			}
+
+			// Check if the interface implements this type OR a pointer to this type.
+			if types.Implements(pkgImplType, ifaceType) || types.Implements(types.NewPointer(pkgImplType), ifaceType) {
+				if methodName == "" {
+					// If we're not looking for a specific method, the relation points to the implementation of the interface type.
+					r := Relation{
+						Kind: RelationKindIface,
+						Pkg:  pkgNameForTypeObj(obj),
+						Name: obj.Name(),
+						Loc:  fileLocForTypeObj(searchPkg, obj),
+					}
+					relationSet[r] = struct{}{}
+				} else {
+					// If we're looking for a specific method, the relation points to the implementation of the method.
+					methodObj, _, _ := types.LookupFieldOrMethod(obj.Type(), true, searchPkg.Types, methodName)
+					if methodObj != nil {
+						r := Relation{
+							Kind: RelationKindIface,
+							Pkg:  pkgNameForTypeObj(methodObj),
+							Name: fmt.Sprintf("%s.%s()", obj.Name(), methodObj.Name()),
+							Loc:  fileLocForTypeObj(searchPkg, methodObj),
+						}
+						relationSet[r] = struct{}{}
+					}
+				}
+			}
+		}
 	}
 
 	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
@@ -413,6 +462,14 @@ func interfaceTypeInPkgScopeWithName(pkg *packages.Package, name string) *types.
 	}
 
 	return ifaceType
+}
+
+func implTypeInPkgScopeWithName(pkg *packages.Package, name string) types.Type {
+	implDefObj := pkg.Types.Scope().Lookup(name)
+	if implDefObj == nil {
+		return nil
+	}
+	return implDefObj.Type().Underlying()
 }
 
 func methodNameForTypeAtLoc(pkg *packages.Package, loc file.Loc, targetType types.Type) string {
