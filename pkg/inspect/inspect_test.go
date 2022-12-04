@@ -553,7 +553,7 @@ func TestInspectImplOfInterface(t *testing.T) {
 		Path:   "testdata/testmodule009/impl.go",
 		Line:   3,
 		Column: 7,
-	}, "testdata/testmodule009", AllRelationKinds)
+	}, "testdata/testmodule009", []RelationKind{RelationKindIface})
 
 	require.NoError(t, err)
 	expected := &Result{
@@ -561,13 +561,13 @@ func TestInspectImplOfInterface(t *testing.T) {
 		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.MyInterfaceImpl",
 		Relations: []Relation{
 			{
-				Kind: "definition",
+				Kind: "interface",
 				Pkg:  "testmodule009",
-				Name: "MyInterfaceImpl",
+				Name: "MyInterface",
 				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule009/impl.go"),
+					Path:   absPath(t, "testdata/testmodule009/iface.go"),
 					Line:   3,
-					Column: 7,
+					Column: 6,
 				},
 			},
 		},
@@ -625,6 +625,33 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
 					Line:   13,
 					Column: 32,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectImplOfInterfaceMethod(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule009/impl.go",
+		Line:   5,
+		Column: 26,
+	}, "testdata/testmodule009", []RelationKind{RelationKindIface})
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "IfaceMethodOne",
+		Type: "func() string",
+		Relations: []Relation{
+			{
+				Kind: "interface",
+				Pkg:  "testmodule009",
+				Name: "MyInterface.IfaceMethodOne",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/iface.go"),
+					Line:   4,
+					Column: 6,
 				},
 			},
 		},
