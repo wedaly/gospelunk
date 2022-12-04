@@ -184,14 +184,14 @@ func findPossibleGoModDirsInSearchDir(searchDir string) ([]string, error) {
 // Field names match the JSON output for the Package struct
 // output by the `go list` cmd (see `go help list`).
 type skeletonPkg struct {
-	ImportPath string // Equivalent to the ID field in packages.Package
+	ImportPath string // Equivalent to the PkgPath field in packages.Package
 	Imports    []string
 }
 
 // ImportsPkg checks whether the skeleton pkg imports a given package.
-func (skel skeletonPkg) ImportsPkg(targetPkgId string) bool {
-	for _, importPkgId := range skel.Imports {
-		if importPkgId == targetPkgId {
+func (skel skeletonPkg) ImportsPkg(targetPkgPath string) bool {
+	for _, importPkgPath := range skel.Imports {
+		if importPkgPath == targetPkgPath {
 			return true
 		}
 	}
