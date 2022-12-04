@@ -292,7 +292,49 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 }
 
 func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
-	// TODO
+	typeSpec, err := astNodeAtLoc[*ast.TypeSpec](pkg, loc)
+	if err != nil {
+		// Can't find a typespec, so this isn't an implementation.
+		return nil
+	}
+
+	implObj, ok := pkg.TypesInfo.Defs[typeSpec.Name]
+	if !ok {
+		// Can't find the definition, so skip it.
+		return nil
+	}
+
+	implType := implObj.Type().Underlying()
+
+	methodName := methodNameForTypeAtLoc(pkg, loc, implType) // Empty string if not on method identifier.
+
+	loadMode := (packages.NeedDeps |
+		packages.NeedTypes |
+		packages.NeedTypesInfo |
+		packages.NeedImports)
+
+	includeTests := isGoTestFile(loc.Path)
+	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, includeTests, func(candidate skeletonPkg) bool {
+		return candidate.ImportPath == pkg.PkgPath || candidate.ImportsPkg(pkg.PkgPath)
+	})
+	if err != nil {
+		return err
+	}
+
+	relationSet := make(map[Relation]struct{}, 0)
+	for _, searchPkg := range searchPkgs {
+		// Lookup the impl type either in the package or its imports.
+		// We need this to find interfaces in the package that implement this type.
+		// (We can't use implType because it comes from a different package, so isn't comparable to types in this pkg.)
+		pkgImplType := implTypeInPkgScopeWithName(searchPkg, implObj.Name())
+		if searchPkg.PkgPath == pkg.PkgPath {
+			// TODO
+		}
+
+		// TODO
+	}
+
+	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
 	return nil
 }
 
