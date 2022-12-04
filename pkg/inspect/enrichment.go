@@ -204,7 +204,7 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 		return nil
 	}
 
-	methodName := methodNameForInterfaceAtLoc(pkg, loc, ifaceType) // Empty string if not on method identifier.
+	methodName := methodNameForTypeAtLoc(pkg, loc, ifaceType) // Empty string if not on method identifier.
 
 	loadMode := (packages.NeedDeps |
 		packages.NeedTypes |
@@ -372,13 +372,13 @@ func interfaceTypeInPkgScopeWithName(pkg *packages.Package, name string) *types.
 	return ifaceType
 }
 
-func methodNameForInterfaceAtLoc(pkg *packages.Package, loc file.Loc, ifaceType *types.Interface) string {
+func methodNameForTypeAtLoc(pkg *packages.Package, loc file.Loc, targetType types.Type) string {
 	methodIdent, err := astNodeAtLoc[*ast.Ident](pkg, loc)
 	if err != nil || methodIdent == nil {
 		return ""
 	}
 
-	methodObj, _, _ := types.LookupFieldOrMethod(ifaceType, true, pkg.Types, methodIdent.Name)
+	methodObj, _, _ := types.LookupFieldOrMethod(targetType, true, pkg.Types, methodIdent.Name)
 	if methodObj == nil {
 		return ""
 	}
