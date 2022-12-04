@@ -291,6 +291,11 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 	return nil
 }
 
+func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
+	// TODO
+	return nil
+}
+
 func typeObjUseOrDefForAstIdent(ident *ast.Ident, pkg *packages.Package) (types.Object, error) {
 	obj, ok := pkg.TypesInfo.Uses[ident]
 	if !ok {

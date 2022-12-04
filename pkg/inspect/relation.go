@@ -12,18 +12,26 @@ const (
 	// The relation between a usage and its definition.
 	RelationKindDef = RelationKind("definition")
 
-	// The relation between an interface and an implementation.
-	RelationKindImpl = RelationKind("implementation")
-
 	// The relation between a definition and its references.
 	RelationKindRef = RelationKind("reference")
+
+	// The relation between an interface and its implementation.
+	RelationKindImpl = RelationKind("implementation")
+
+	// The relation between an implementation and its interface.
+	RelationKindIface = RelationKind("interface")
 )
 
 var AllRelationKinds []RelationKind
 var AllRelationKindStrings []string
 
 func init() {
-	AllRelationKinds = []RelationKind{RelationKindDef, RelationKindRef, RelationKindImpl}
+	AllRelationKinds = []RelationKind{
+		RelationKindDef,
+		RelationKindRef,
+		RelationKindImpl,
+		RelationKindIface,
+	}
 	for _, r := range AllRelationKinds {
 		AllRelationKindStrings = append(AllRelationKindStrings, string(r))
 	}
