@@ -315,7 +315,8 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 		return nil
 	}
 
-	loadMode := (packages.NeedDeps |
+	loadMode := (packages.NeedName |
+		packages.NeedDeps |
 		packages.NeedTypes |
 		packages.NeedTypesInfo |
 		packages.NeedImports)
