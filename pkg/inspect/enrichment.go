@@ -292,7 +292,7 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 }
 
 func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
-	if typeSpec, err := astNodeAtLoc[*ast.TypeSpec](pkg, loc); err != nil && typeSpec != nil {
+	if typeSpec, err := astNodeAtLoc[*ast.TypeSpec](pkg, loc); err == nil {
 		return enrichResultIfaceRelationFromTypeSpec(result, pkg, loc, searchDir, typeSpec)
 	}
 
