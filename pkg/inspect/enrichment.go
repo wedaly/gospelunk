@@ -83,7 +83,7 @@ func enrichResultRefRelation(result *Result, pkg *packages.Package, loc file.Loc
 
 	includeTests := isGoTestFile(loc.Path)
 	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, includeTests, func(candidate skeletonPkg) bool {
-		return candidate.ImportPath == pkg.PkgPath || (ident.IsExported() && candidate.ImportsPkg(pkg.ID))
+		return candidate.ImportPath == pkg.PkgPath || (ident.IsExported() && candidate.ImportsPkg(pkg.PkgPath))
 	})
 	if err != nil {
 		return err
@@ -213,7 +213,7 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 
 	includeTests := isGoTestFile(loc.Path)
 	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, includeTests, func(candidate skeletonPkg) bool {
-		return candidate.ImportPath == pkg.PkgPath || candidate.ImportsPkg(pkg.ID)
+		return candidate.ImportPath == pkg.PkgPath || candidate.ImportsPkg(pkg.PkgPath)
 	})
 	if err != nil {
 		return err
@@ -225,9 +225,9 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 		// We need this to check if other types in the package implement the interface.
 		// (We can't use ifaceType because it comes from a different package, so isn't comparable to types in this pkg.)
 		pkgIfaceType := interfaceTypeInPkgScopeWithName(searchPkg, ifaceName)
-		if searchPkg.ID == pkg.ID {
+		if searchPkg.PkgPath == pkg.PkgPath {
 			pkgIfaceType = interfaceTypeInPkgScopeWithName(searchPkg, ifaceName)
-		} else if importedPkg, ok := searchPkg.Imports[pkg.ID]; ok {
+		} else if importedPkg, ok := searchPkg.Imports[pkg.PkgPath]; ok {
 			pkgIfaceType = interfaceTypeInPkgScopeWithName(importedPkg, ifaceName)
 		}
 
