@@ -172,7 +172,7 @@ func TestListWithImports(t *testing.T) {
 		require.NoError(t, err)
 
 		// Exact definitions may vary based on Go stdlib, so check that imported packages are included.
-		defPkgs := make(map[string][]string, 0)
+		defPkgs := make(map[string][]string)
 		for _, def := range result.Defs {
 			defPkgs[def.Pkg.ID] = append(defPkgs[def.Pkg.ID], def.Name)
 		}

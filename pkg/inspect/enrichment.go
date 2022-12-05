@@ -89,7 +89,7 @@ func enrichResultRefRelation(result *Result, pkg *packages.Package, loc file.Loc
 		return err
 	}
 
-	relationSet := make(map[Relation]struct{}, 0)
+	relationSet := make(map[Relation]struct{})
 	for _, searchPkg := range searchPkgs {
 		for refIdent, refObj := range searchPkg.TypesInfo.Uses {
 			refPosition := searchPkg.Fset.Position(refObj.Pos())
@@ -220,7 +220,7 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 		return err
 	}
 
-	relationSet := make(map[Relation]struct{}, 0)
+	relationSet := make(map[Relation]struct{})
 	for _, searchPkg := range searchPkgs {
 		// Lookup the interface type either in the package or its imports.
 		// We need this to check if other types in the package implement the interface.
@@ -237,7 +237,7 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 		}
 
 		// Search every reference in this package for implementations of the interface.
-		seen := make(map[types.Object]struct{}, 0)
+		seen := make(map[types.Object]struct{})
 		for _, obj := range searchPkg.TypesInfo.Uses {
 			if obj == nil || obj.Type() == types.Typ[types.Invalid] {
 				continue
