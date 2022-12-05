@@ -822,16 +822,6 @@ func TestInspectStructWithReference(t *testing.T) {
 					Column: 6,
 				},
 			},
-			{
-				Kind: "interface",
-				Pkg:  "subpkg",
-				Name: "MyInterface.MyMethod()",
-				Loc: file.Loc{
-					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
-					Line:   12,
-					Column: 2,
-				},
-			},
 		},
 	}
 	assert.Equal(t, expected, result)
@@ -904,6 +894,16 @@ func TestInspectStructMethodWithReference(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
 					Line:   9,
 					Column: 21,
+				},
+			},
+			{
+				Kind: "interface",
+				Pkg:  "subpkg",
+				Name: "MyInterface.MyMethod()",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   12,
+					Column: 2,
 				},
 			},
 		},
