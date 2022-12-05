@@ -302,6 +302,12 @@ func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.L
 }
 
 func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, typeSpec *ast.TypeSpec) error {
+	ident, err := astNodeAtLoc[*ast.Ident](pkg, loc)
+	if err != nil || ident != typeSpec.Name {
+		// Not on the name of the typespec, so skip it.
+		return nil
+	}
+
 	implObj, ok := pkg.TypesInfo.Defs[typeSpec.Name]
 	if !ok {
 		// Can't find the definition, so skip it.
