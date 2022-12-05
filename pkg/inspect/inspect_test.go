@@ -787,7 +787,7 @@ func TestInspectStructWithReference(t *testing.T) {
 			},
 			{
 				Kind: "interface",
-				Pkg: "subpkg",
+				Pkg:  "subpkg",
 				Name: "MyInterface",
 				Loc: file.Loc{
 					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),

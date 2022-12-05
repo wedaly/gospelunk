@@ -294,9 +294,9 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
 	if typeSpec, err := astNodeAtLoc[*ast.TypeSpec](pkg, loc); err == nil {
 		return enrichResultIfaceRelationFromTypeSpec(result, pkg, loc, searchDir, typeSpec)
+	} else if funcDecl, err := astNodeAtLoc[*ast.FuncDecl](pkg, loc); err == nil {
+		return enrichResultIfaceRelationFromFuncDecl(result, pkg, loc, searchDir, funcDecl)
 	}
-
-	// TODO: if it's a func decl, lookup the method...
 
 	return nil
 }
@@ -393,6 +393,11 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 	}
 
 	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
+	return nil
+}
+
+func enrichResultIfaceRelationFromFuncDecl(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, funcDecl *ast.FuncDecl) error {
+	// TODO
 	return nil
 }
 
