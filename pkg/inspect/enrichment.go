@@ -369,13 +369,8 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 				continue
 			}
 
-			if _, ok := obj.Type().(*types.Named); !ok {
-				// Filter for only named types.
-				continue
-			}
-
-			if _, ok := obj.(*types.Var); ok {
-				// Exclude variables (including method receivers).
+			if _, ok := obj.(*types.TypeName); !ok {
+				// Filter for only type names.
 				continue
 			}
 
