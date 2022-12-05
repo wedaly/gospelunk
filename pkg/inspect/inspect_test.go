@@ -548,6 +548,60 @@ func TestInspectInterfaceWithImpl(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+func TestInspectImplOfInterface(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule009/impl.go",
+		Line:   3,
+		Column: 7,
+	}, "testdata/testmodule009", []RelationKind{RelationKindIface})
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyInterfaceImpl",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.MyInterfaceImpl",
+		Relations: []Relation{
+			{
+				Kind: "interface",
+				Pkg:  "testmodule009",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/iface.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectPointerImplOfInterface(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule009/impl.go",
+		Line:   13,
+		Column: 7,
+	}, "testdata/testmodule009", []RelationKind{RelationKindIface})
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "MyInterfacePointerImpl",
+		Type: "github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.MyInterfacePointerImpl",
+		Relations: []Relation{
+			{
+				Kind: "interface",
+				Pkg:  "testmodule009",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/iface.go"),
+					Line:   3,
+					Column: 6,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
 func TestInspectInterfaceWithImplMethod(t *testing.T) {
 	result, err := Inspect(file.Loc{
 		Path:   "testdata/testmodule009/iface.go",
@@ -598,6 +652,60 @@ func TestInspectInterfaceWithImplMethod(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule009/subpkg/impl.go"),
 					Line:   13,
 					Column: 32,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectImplOfInterfaceMethod(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule009/impl.go",
+		Line:   5,
+		Column: 26,
+	}, "testdata/testmodule009", []RelationKind{RelationKindIface})
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "IfaceMethodOne",
+		Type: "func() string",
+		Relations: []Relation{
+			{
+				Kind: "interface",
+				Pkg:  "testmodule009",
+				Name: "MyInterface.IfaceMethodOne()",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/iface.go"),
+					Line:   4,
+					Column: 2,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, result)
+}
+
+func TestInspectImplOfInterfaceMethodWithPointerReceiver(t *testing.T) {
+	result, err := Inspect(file.Loc{
+		Path:   "testdata/testmodule009/impl.go",
+		Line:   19,
+		Column: 37,
+	}, "testdata/testmodule009", []RelationKind{RelationKindIface})
+
+	require.NoError(t, err)
+	expected := &Result{
+		Name: "IfaceMethodTwo",
+		Type: "func(param github.com/wedaly/gospelunk/pkg/inspect/testdata/testmodule009.ParamType) int",
+		Relations: []Relation{
+			{
+				Kind: "interface",
+				Pkg:  "testmodule009",
+				Name: "MyInterface.IfaceMethodTwo()",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule009/iface.go"),
+					Line:   5,
+					Column: 2,
 				},
 			},
 		},
@@ -704,6 +812,16 @@ func TestInspectStructWithReference(t *testing.T) {
 					Column: 22,
 				},
 			},
+			{
+				Kind: "interface",
+				Pkg:  "subpkg",
+				Name: "MyInterface",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   11,
+					Column: 6,
+				},
+			},
 		},
 	}
 	assert.Equal(t, expected, result)
@@ -776,6 +894,16 @@ func TestInspectStructMethodWithReference(t *testing.T) {
 					Path:   absPath(t, "testdata/testmodule011/subpkg/ref.go"),
 					Line:   9,
 					Column: 21,
+				},
+			},
+			{
+				Kind: "interface",
+				Pkg:  "subpkg",
+				Name: "MyInterface.MyMethod()",
+				Loc: file.Loc{
+					Path:   absPath(t, "testdata/testmodule011/subpkg/def.go"),
+					Line:   12,
+					Column: 2,
 				},
 			},
 		},

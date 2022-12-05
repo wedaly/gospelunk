@@ -291,6 +291,167 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 	return nil
 }
 
+func enrichResultIfaceRelation(result *Result, pkg *packages.Package, loc file.Loc, searchDir string) error {
+	if typeSpec, err := astNodeAtLoc[*ast.TypeSpec](pkg, loc); err == nil {
+		return enrichResultIfaceRelationFromTypeSpec(result, pkg, loc, searchDir, typeSpec)
+	} else if funcDecl, err := astNodeAtLoc[*ast.FuncDecl](pkg, loc); err == nil {
+		return enrichResultIfaceRelationFromFuncDecl(result, pkg, loc, searchDir, funcDecl)
+	}
+
+	return nil
+}
+
+func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, typeSpec *ast.TypeSpec) error {
+	ident, err := astNodeAtLoc[*ast.Ident](pkg, loc)
+	if err != nil || ident != typeSpec.Name {
+		// Not on the name of the typespec, so skip it.
+		return nil
+	}
+
+	implObj, ok := pkg.TypesInfo.Defs[typeSpec.Name]
+	if !ok {
+		// Can't find the definition, so skip it.
+		return nil
+	}
+
+	implType := implObj.Type().Underlying()
+
+	if _, ok := implType.(*types.Interface); ok {
+		// Skip if this is an interface.
+		return nil
+	}
+
+	relationSet := make(map[Relation]struct{})
+	err = forEachIfaceImplementingType(implObj, pkg, loc, searchDir, func(pkg *packages.Package, ifaceName string, ifaceType *types.Interface, implObj types.Object) {
+		r := Relation{
+			Kind: RelationKindIface,
+			Pkg:  pkgNameForTypeObj(implObj),
+			Name: implObj.Name(),
+			Loc:  fileLocForTypeObj(pkg, implObj),
+		}
+		relationSet[r] = struct{}{}
+	})
+	if err != nil {
+		return err
+	}
+
+	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
+	return nil
+}
+
+func enrichResultIfaceRelationFromFuncDecl(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, funcDecl *ast.FuncDecl) error {
+	methodName := funcDecl.Name.Name
+
+	if funcDecl.Recv == nil || len(funcDecl.Recv.List) == 0 {
+		// No receiver for this function, so it isn't a method.
+		return nil
+	}
+
+	var implTypeName *ast.Ident
+	recvTypeField := funcDecl.Recv.List[0].Type
+	if recvTypeIdent, ok := recvTypeField.(*ast.Ident); ok {
+		implTypeName = recvTypeIdent
+	} else if recvTypeStarExpr, ok := recvTypeField.(*ast.StarExpr); ok {
+		if recvTypeIdent, ok := recvTypeStarExpr.X.(*ast.Ident); ok {
+			implTypeName = recvTypeIdent
+		}
+	}
+
+	if implTypeName == nil {
+		// Cannot find type name of receiver.
+		return nil
+	}
+
+	implObj, ok := pkg.TypesInfo.Uses[implTypeName]
+	if !ok {
+		// Cannot find definition for impl type name.
+		return nil
+	}
+
+	relationSet := make(map[Relation]struct{})
+	err := forEachIfaceImplementingType(implObj, pkg, loc, searchDir, func(pkg *packages.Package, ifaceName string, ifaceType *types.Interface, implObj types.Object) {
+		methodObj, _, _ := types.LookupFieldOrMethod(ifaceType, true, pkg.Types, methodName)
+		if methodObj != nil {
+			r := Relation{
+				Kind: RelationKindIface,
+				Pkg:  pkgNameForTypeObj(methodObj),
+				Name: fmt.Sprintf("%s.%s()", ifaceName, methodObj.Name()),
+				Loc:  fileLocForTypeObj(pkg, methodObj),
+			}
+			relationSet[r] = struct{}{}
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
+	return nil
+}
+
+func forEachIfaceImplementingType(implObj types.Object, pkg *packages.Package, loc file.Loc, searchDir string, f func(*packages.Package, string, *types.Interface, types.Object)) error {
+	loadMode := (packages.NeedName |
+		packages.NeedDeps |
+		packages.NeedTypes |
+		packages.NeedTypesInfo |
+		packages.NeedImports)
+
+	includeTests := isGoTestFile(loc.Path)
+	searchPkgs, err := loadGoPackagesMatchingPredicate(searchDir, loadMode, includeTests, func(candidate skeletonPkg) bool {
+		return candidate.ImportPath == pkg.PkgPath || candidate.ImportsPkg(pkg.PkgPath)
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, searchPkg := range searchPkgs {
+		// Lookup the impl type either in the package or its imports.
+		// We need this to find interfaces in this package that implement the target implementation.
+		// (We can't use implType directly because it comes from a different package, so it isn't comparable to types in this pkg.)
+		var pkgImplType types.Type
+		if searchPkg.PkgPath == pkg.PkgPath {
+			pkgImplType = implTypeInPkgScopeWithName(searchPkg, implObj.Name())
+		} else if importedPkg, ok := searchPkg.Imports[pkg.PkgPath]; ok {
+			pkgImplType = implTypeInPkgScopeWithName(importedPkg, implObj.Name())
+		}
+
+		if pkgImplType == nil {
+			continue
+		}
+
+		// Search every reference in this package for an interface implementing the target type.
+		seen := make(map[types.Object]struct{})
+		for _, obj := range searchPkg.TypesInfo.Uses {
+			if obj == nil || obj.Type() == types.Typ[types.Invalid] {
+				continue
+			}
+
+			ifaceType, ok := obj.Type().Underlying().(*types.Interface)
+			if !ok {
+				// Not an interface.
+				continue
+			}
+
+			if _, ok := seen[obj]; ok {
+				// Skip intefaces we've already seen.
+				continue
+			}
+
+			if _, ok := obj.(*types.TypeName); !ok {
+				// Filter for only type names.
+				continue
+			}
+
+			// Check if the interface implements this type OR a pointer to this type.
+			if types.Implements(pkgImplType, ifaceType) || types.Implements(types.NewPointer(pkgImplType), ifaceType) {
+				f(searchPkg, obj.Name(), ifaceType, obj)
+			}
+		}
+	}
+
+	return nil
+}
+
 func typeObjUseOrDefForAstIdent(ident *ast.Ident, pkg *packages.Package) (types.Object, error) {
 	obj, ok := pkg.TypesInfo.Uses[ident]
 	if !ok {
@@ -366,6 +527,14 @@ func interfaceTypeInPkgScopeWithName(pkg *packages.Package, name string) *types.
 	}
 
 	return ifaceType
+}
+
+func implTypeInPkgScopeWithName(pkg *packages.Package, name string) types.Type {
+	implDefObj := pkg.Types.Scope().Lookup(name)
+	if implDefObj == nil {
+		return nil
+	}
+	return implDefObj.Type()
 }
 
 func methodNameForTypeAtLoc(pkg *packages.Package, loc file.Loc, targetType types.Type) string {
