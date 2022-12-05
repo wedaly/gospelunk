@@ -321,8 +321,8 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 		return nil
 	}
 
-	relationSet := make(map[Relation]struct{}, 0)
-	err = forEachIfaceImplementingType(implObj, pkg, loc, searchDir, func(pkg *packages.Package, ifaceType *types.Interface, implObj types.Object) {
+	relationSet := make(map[Relation]struct{})
+	err = forEachIfaceImplementingType(implObj, pkg, loc, searchDir, func(pkg *packages.Package, ifaceName string, ifaceType *types.Interface, implObj types.Object) {
 		r := Relation{
 			Kind: RelationKindIface,
 			Pkg:  pkgNameForTypeObj(implObj),
@@ -340,14 +340,56 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 }
 
 func enrichResultIfaceRelationFromFuncDecl(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, funcDecl *ast.FuncDecl) error {
-	// TODO: get receiver type (that's the impl)
-	// TODO: search pkgs
-	// TODO: search TypesInfo.Uses for interfaces implementing the receiver type
-	// TODO: lookup the method name in the interface
+	methodName := funcDecl.Name.Name
+
+	if funcDecl.Recv == nil || len(funcDecl.Recv.List) == 0 {
+		// No receiver for this function, so it isn't a method.
+		return nil
+	}
+
+	var implTypeName *ast.Ident
+	recvTypeField := funcDecl.Recv.List[0].Type
+	if recvTypeIdent, ok := recvTypeField.(*ast.Ident); ok {
+		implTypeName = recvTypeIdent
+	} else if recvTypeStarExpr, ok := recvTypeField.(*ast.StarExpr); ok {
+		if recvTypeIdent, ok := recvTypeStarExpr.X.(*ast.Ident); ok {
+			implTypeName = recvTypeIdent
+		}
+	}
+
+	if implTypeName == nil {
+		// Cannot find type name of receiver.
+		return nil
+	}
+
+	implObj, ok := pkg.TypesInfo.Defs[implTypeName]
+	if !ok {
+		// Cannot find definition for impl type name.
+		return nil
+	}
+
+	relationSet := make(map[Relation]struct{})
+	err := forEachIfaceImplementingType(implObj, pkg, loc, searchDir, func(pkg *packages.Package, ifaceName string, ifaceType *types.Interface, implObj types.Object) {
+		methodObj, _, _ := types.LookupFieldOrMethod(ifaceType, true, pkg.Types, methodName)
+		if methodObj != nil {
+			r := Relation{
+				Kind: RelationKindIface,
+				Pkg:  pkgNameForTypeObj(methodObj),
+				Name: fmt.Sprintf("%s.%s()", ifaceName, methodObj.Name()),
+				Loc:  fileLocForTypeObj(pkg, methodObj),
+			}
+			relationSet[r] = struct{}{}
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
 	return nil
 }
 
-func forEachIfaceImplementingType(implObj types.Object, pkg *packages.Package, loc file.Loc, searchDir string, f func(*packages.Package, *types.Interface, types.Object)) error {
+func forEachIfaceImplementingType(implObj types.Object, pkg *packages.Package, loc file.Loc, searchDir string, f func(*packages.Package, string, *types.Interface, types.Object)) error {
 	loadMode := (packages.NeedName |
 		packages.NeedDeps |
 		packages.NeedTypes |
@@ -402,7 +444,7 @@ func forEachIfaceImplementingType(implObj types.Object, pkg *packages.Package, l
 
 			// Check if the interface implements this type OR a pointer to this type.
 			if types.Implements(pkgImplType, ifaceType) || types.Implements(types.NewPointer(pkgImplType), ifaceType) {
-				f(searchPkg, ifaceType, obj)
+				f(searchPkg, obj.Name(), ifaceType, obj)
 			}
 		}
 	}
