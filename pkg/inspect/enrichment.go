@@ -362,7 +362,7 @@ func enrichResultIfaceRelationFromFuncDecl(result *Result, pkg *packages.Package
 		return nil
 	}
 
-	implObj, ok := pkg.TypesInfo.Defs[implTypeName]
+	implObj, ok := pkg.TypesInfo.Uses[implTypeName]
 	if !ok {
 		// Cannot find definition for impl type name.
 		return nil
