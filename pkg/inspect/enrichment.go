@@ -243,21 +243,16 @@ func enrichResultImplRelation(result *Result, pkg *packages.Package, loc file.Lo
 				continue
 			}
 
+			if _, ok := obj.(*types.TypeName); !ok {
+				// Filter for only type names.
+				continue
+			}
+
 			if _, ok := seen[obj]; ok {
 				// Skip objects we've already processed.
 				continue
 			}
 			seen[obj] = struct{}{}
-
-			if _, ok := obj.Type().(*types.Named); !ok {
-				// Filter for only named types.
-				continue
-			}
-
-			if _, ok := obj.(*types.Var); ok {
-				// Exclude variables (including method receivers).
-				continue
-			}
 
 			if types.Identical(obj.Type().Underlying(), pkgIfaceType) {
 				// Interfaces always implement themselves, so skip the one we're looking for.
