@@ -321,6 +321,33 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 		return nil
 	}
 
+	relationSet := make(map[Relation]struct{}, 0)
+	err = forEachIfaceImplementingType(implObj, pkg, loc, searchDir, func(pkg *packages.Package, ifaceType *types.Interface, implObj types.Object) {
+		r := Relation{
+			Kind: RelationKindIface,
+			Pkg:  pkgNameForTypeObj(implObj),
+			Name: implObj.Name(),
+			Loc:  fileLocForTypeObj(pkg, implObj),
+		}
+		relationSet[r] = struct{}{}
+	})
+	if err != nil {
+		return err
+	}
+
+	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
+	return nil
+}
+
+func enrichResultIfaceRelationFromFuncDecl(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, funcDecl *ast.FuncDecl) error {
+	// TODO: get receiver type (that's the impl)
+	// TODO: search pkgs
+	// TODO: search TypesInfo.Uses for interfaces implementing the receiver type
+	// TODO: lookup the method name in the interface
+	return nil
+}
+
+func forEachIfaceImplementingType(implObj types.Object, pkg *packages.Package, loc file.Loc, searchDir string, f func(*packages.Package, *types.Interface, types.Object)) error {
 	loadMode := (packages.NeedName |
 		packages.NeedDeps |
 		packages.NeedTypes |
@@ -335,7 +362,6 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 		return err
 	}
 
-	relationSet := make(map[Relation]struct{}, 0)
 	for _, searchPkg := range searchPkgs {
 		// Lookup the impl type either in the package or its imports.
 		// We need this to find interfaces in this package that implement the target implementation.
@@ -376,26 +402,11 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 
 			// Check if the interface implements this type OR a pointer to this type.
 			if types.Implements(pkgImplType, ifaceType) || types.Implements(types.NewPointer(pkgImplType), ifaceType) {
-				r := Relation{
-					Kind: RelationKindIface,
-					Pkg:  pkgNameForTypeObj(obj),
-					Name: obj.Name(),
-					Loc:  fileLocForTypeObj(searchPkg, obj),
-				}
-				relationSet[r] = struct{}{}
+				f(searchPkg, ifaceType, obj)
 			}
 		}
 	}
 
-	result.Relations = append(result.Relations, relationSetToSortedSlice(relationSet)...)
-	return nil
-}
-
-func enrichResultIfaceRelationFromFuncDecl(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, funcDecl *ast.FuncDecl) error {
-	// TODO: get receiver type (that's the impl)
-	// TODO: search pkgs
-	// TODO: search TypesInfo.Uses for interfaces implementing the receiver type
-	// TODO: lookup the method name in the interface
 	return nil
 }
 
