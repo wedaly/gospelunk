@@ -369,6 +369,16 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 				continue
 			}
 
+			if _, ok := obj.Type().(*types.Named); !ok {
+				// Filter for only named types.
+				continue
+			}
+
+			if _, ok := obj.(*types.Var); ok {
+				// Exclude variables (including method receivers).
+				continue
+			}
+
 			// Check if the interface implements this type OR a pointer to this type.
 			if types.Implements(pkgImplType, ifaceType) || types.Implements(types.NewPointer(pkgImplType), ifaceType) {
 				r := Relation{
