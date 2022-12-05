@@ -397,7 +397,10 @@ func enrichResultIfaceRelationFromTypeSpec(result *Result, pkg *packages.Package
 }
 
 func enrichResultIfaceRelationFromFuncDecl(result *Result, pkg *packages.Package, loc file.Loc, searchDir string, funcDecl *ast.FuncDecl) error {
-	// TODO
+	// TODO: get receiver type (that's the impl)
+	// TODO: search pkgs
+	// TODO: search TypesInfo.Uses for interfaces implementing the receiver type
+	// TODO: lookup the method name in the interface
 	return nil
 }
 
