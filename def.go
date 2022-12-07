@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
 func main() {
-	// Step 1: parse command-line arguments.
 	if len(os.Args) < 4 {
 		fmt.Fprintf(os.Stderr, "Usage: %s FILE LINE COL\n", os.Args[0])
 		os.Exit(1)
@@ -26,8 +26,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	err = lookupGoDef(pathArg, lineArg, colArg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%w\n", err)
+		os.Exit(1)
+	}
+}
+
+func lookupGoDef(path string, line int, col int) error {
 	// Step 2: load the Go package.
-	// TODO
+	absPath, err := filepath.Abs(pathArg)
+	if err != nil {
+		return err
+	}
 
 	// Step 3: find the AST identifier at the line/column
 	// TODO
