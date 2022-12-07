@@ -29,14 +29,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = lookupGoDef(pathArg, lineArg, colArg)
+	err = lookupAndPrintGoDef(pathArg, lineArg, colArg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
 }
 
-func lookupGoDef(path string, line int, col int) error {
+func lookupAndPrintGoDef(path string, line int, col int) error {
 	// Step 1: load the Go package.
 	absPath, err := filepath.Abs(path)
 	if err != nil {
