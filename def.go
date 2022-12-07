@@ -31,7 +31,7 @@ func main() {
 
 	err = lookupGoDef(pathArg, lineArg, colArg)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%w\n", err)
+		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
 }
@@ -93,6 +93,9 @@ func lookupGoDef(path string, line int, col int) error {
 		}
 		return true
 	})
+	if astIdent == nil {
+		return fmt.Errorf("Could not find AST identifier at %s:%d:%d", path, line, col)
+	}
 
 	// Step 4: lookup the definition.
 	obj, ok := pkg.TypesInfo.Uses[astIdent]
@@ -107,7 +110,7 @@ func lookupGoDef(path string, line int, col int) error {
 
 	// Step 5: print the result.
 	defPosition := pkg.Fset.Position(obj.Pos())
-	fmt.Printf("%q is defined at %s:%d:%d\n", defPosition.Filename, defPosition.Line, defPosition.Column)
+	fmt.Printf("%q is defined at %s:%d:%d\n", obj.Name(), defPosition.Filename, defPosition.Line, defPosition.Column)
 
 	return nil
 }
