@@ -43,7 +43,6 @@ func lookupGoDef(path string, line int, col int) error {
 		return err
 	}
 
-	// TODO strip this down...
 	loadMode := (packages.NeedName |
 		packages.NeedSyntax |
 		packages.NeedDeps |
@@ -62,7 +61,7 @@ func lookupGoDef(path string, line int, col int) error {
 		return fmt.Errorf("No packages loaded")
 	}
 
-	pkg := pkgs[0] // TODO: explain this...
+	pkg := pkgs[0]
 
 	// Step 2: find the AST for the target path.
 	var astFile *ast.File
@@ -83,7 +82,10 @@ func lookupGoDef(path string, line int, col int) error {
 			return false
 		}
 		start, end := pkg.Fset.Position(node.Pos()), pkg.Fset.Position(node.End())
-		if line < start.Line || line > end.Line || (line == start.Line && col < start.Column) || (line == end.Line && col > end.Column) {
+		if line < start.Line ||
+			line > end.Line ||
+			(line == start.Line && col < start.Column) ||
+			(line == end.Line && col > end.Column) {
 			return false
 		}
 		if node, ok := node.(*ast.Ident); ok {
