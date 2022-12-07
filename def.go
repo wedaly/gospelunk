@@ -45,7 +45,6 @@ func lookupGoDef(path string, line int, col int) error {
 
 	// TODO strip this down...
 	loadMode := (packages.NeedName |
-		packages.NeedFiles |
 		packages.NeedSyntax |
 		packages.NeedDeps |
 		packages.NeedTypes |
