@@ -95,10 +95,19 @@ func lookupGoDef(path string, line int, col int) error {
 	})
 
 	// Step 4: lookup the definition.
-	// TODO
+	obj, ok := pkg.TypesInfo.Uses[astIdent]
+	if !ok {
+		obj = pkg.TypesInfo.Defs[astIdent]
+	}
+	if obj == nil {
+		return fmt.Errorf("Could not find type object for ident %q at %s:%d:%d", astIdent.Name, path, line, col)
+	} else if !obj.Pos().IsValid() {
+		return fmt.Errorf("Invalid position for type object for %q at %s:%d:%d", astIdent.Name, path, line, col)
+	}
 
 	// Step 5: print the result.
-	// TODO
+	defPosition := pkg.Fset.Position(obj.Pos())
+	fmt.Printf("%q is defined at %s:%d:%d\n", defPosition.Filename, defPosition.Line, defPosition.Column)
 
 	return nil
 }
