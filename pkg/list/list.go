@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 
 	"github.com/wedaly/gospelunk/pkg/file"
@@ -129,7 +128,7 @@ func loadGoPackages(patterns []string, opts Options) ([]*packages.Package, error
 
 	pkgs, err := packages.Load(cfg, patterns...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "packages.Load")
+		return nil, fmt.Errorf("packages.Load: %w", err)
 	}
 
 	if opts.OnlyImports {

@@ -1,11 +1,10 @@
 package output
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"text/template"
-
-	"github.com/pkg/errors"
 )
 
 func Template(tmplString string) (*template.Template, error) {
@@ -14,7 +13,7 @@ func Template(tmplString string) (*template.Template, error) {
 		Parse(tmplString)
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "template.Parse")
+		return nil, fmt.Errorf("template.Parse: %w", err)
 	}
 
 	return tmpl, nil

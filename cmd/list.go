@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"github.com/wedaly/gospelunk/pkg/list"
@@ -42,7 +43,7 @@ var listCmd = &cobra.Command{
 
 		err = tmpl.Execute(cmd.OutOrStdout(), result)
 		if err != nil {
-			return errors.Wrapf(err, "template.Execute")
+			return fmt.Errorf("template.Execute: %w", err)
 		}
 
 		return nil

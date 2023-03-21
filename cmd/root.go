@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -22,13 +22,13 @@ func ExecuteInTest(args []string, cwd string) (stdout string, stderr string, err
 	// Set the current working directory and restore on exit.
 	oldWd, err := os.Getwd()
 	if err != nil {
-		return "", "", errors.Wrapf(err, "os.Getwd")
+		return "", "", fmt.Errorf("os.Getwd: %w", err)
 	}
 	defer os.Chdir(oldWd)
 
 	err = os.Chdir(cwd)
 	if err != nil {
-		return "", "", errors.Wrapf(err, "os.Chdir")
+		return "", "", fmt.Errorf("os.Chdir: %w", err)
 	}
 
 	// Configure the cmd to capture stdout and stderr and use test-provided args.

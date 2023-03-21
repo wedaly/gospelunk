@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/wedaly/gospelunk/pkg/file"
@@ -53,7 +52,7 @@ var inspectCmd = &cobra.Command{
 
 		err = tmpl.Execute(cmd.OutOrStdout(), result)
 		if err != nil {
-			return errors.Wrapf(err, "template.Execute")
+			return fmt.Errorf("template.Execute: %w", err)
 		}
 
 		return nil

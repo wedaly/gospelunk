@@ -10,7 +10,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 
 	"github.com/wedaly/gospelunk/pkg/file"
@@ -23,7 +22,7 @@ func isGoTestFile(path string) bool {
 func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 	absPath, err := filepath.Abs(loc.Path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "filepath.Abs")
+		return nil, fmt.Errorf("filepath.Abs: %w", err)
 	}
 
 	cfg := &packages.Config{
@@ -40,7 +39,7 @@ func loadGoPackageForFileLoc(loc file.Loc) (*packages.Package, error) {
 
 	pkgs, err := packages.Load(cfg, ".")
 	if err != nil {
-		return nil, errors.Wrapf(err, "packages.Load")
+		return nil, fmt.Errorf("packages.Load: %w", err)
 	}
 
 	// If tests are included, pkgs will include both test and non-test packages.
@@ -102,7 +101,7 @@ func loadGoPackagesMatchingPredicate(searchDir string, mode packages.LoadMode, i
 
 		pkgs, err := packages.Load(cfg, pkgPaths...)
 		if err != nil {
-			return nil, errors.Wrapf(err, "packages.Load")
+			return nil, fmt.Errorf("packages.Load: %w", err)
 		}
 
 		// If tests are included, pkgs will include both test and non-test packages.
@@ -163,7 +162,7 @@ func findPossibleGoModDirsInSearchDir(searchDir string) ([]string, error) {
 	})
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "filepath.WalkDir")
+		return nil, fmt.Errorf("filepath.WalkDir: %w", err)
 	}
 
 	// Convert relative paths to absolute paths in sorted order.
@@ -171,7 +170,7 @@ func findPossibleGoModDirsInSearchDir(searchDir string) ([]string, error) {
 	for path := range candidateSet {
 		absPath, err := filepath.Abs(path)
 		if err != nil {
-			return nil, errors.Wrapf(err, "filepath.Abs")
+			return nil, fmt.Errorf("filepath.Abs: %w", err)
 		}
 		result = append(result, absPath)
 	}
@@ -215,7 +214,7 @@ func goListSkeletonPkgs(goModDir string) ([]skeletonPkg, error) {
 			// It's okay if we're not in a Go module.
 			return nil, nil
 		}
-		return nil, errors.Wrapf(err, "cmd.Run")
+		return nil, fmt.Errorf("cmd.Run: %w", err)
 	}
 
 	// Stdout is a sequence of JSON-encoded package dictionaries.
@@ -224,7 +223,7 @@ func goListSkeletonPkgs(goModDir string) ([]skeletonPkg, error) {
 	for dec := json.NewDecoder(&stdoutBuf); dec.More(); {
 		var skel skeletonPkg
 		if err := dec.Decode(&skel); err != nil {
-			return nil, errors.Wrapf(err, "json.Unmarshal")
+			return nil, fmt.Errorf("json.Unmarshal: %w", err)
 		}
 		result = append(result, skel)
 	}

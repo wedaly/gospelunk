@@ -7,7 +7,6 @@ import (
 	"go/token"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 
 	"github.com/wedaly/gospelunk/pkg/file"
@@ -55,7 +54,7 @@ func astNodeAtLoc[T ast.Node](pkg *packages.Package, loc file.Loc) (T, error) {
 func astFileForPath(pkg *packages.Package, path string) (*ast.File, error) {
 	targetPath, err := filepath.Abs(path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "filepath.Abs")
+		return nil, fmt.Errorf("filepath.Abs: %w", err)
 	}
 
 	for _, f := range pkg.Syntax {
