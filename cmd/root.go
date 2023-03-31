@@ -14,6 +14,13 @@ var rootCmd = &cobra.Command{
 	Long:  "gospelunk is a command-line tool for quickly finding definitions in Go projects",
 }
 
+func init() {
+	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		cmd.SilenceUsage = true
+		cmd.SilenceErrors = true
+	}
+}
+
 func Execute() error {
 	return rootCmd.Execute()
 }
