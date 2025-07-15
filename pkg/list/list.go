@@ -124,6 +124,11 @@ func loadGoPackages(patterns []string, opts Options) ([]*packages.Package, error
 	if len(patterns) == 1 && strings.HasPrefix(patterns[0], "file=") {
 		_, path, _ := strings.Cut(patterns[0], "=")
 		cfg.Dir = filepath.Dir(path)
+
+		// Since golang.org/x/tools v0.35.0 the file is resolved
+		// relative to cfg.Dir, so rewrite the query relative to cfg.Dir.
+		// https://github.com/golang/tools/commit/f0ace1320aba7feb36c16f76453de42390c9f772
+		patterns[0] = fmt.Sprintf("file=%s", filepath.Base(path))
 	}
 
 	pkgs, err := packages.Load(cfg, patterns...)
